@@ -1,0 +1,203 @@
+#!/usr/bin/env node
+const { exec, spawn, spawnSync } = require("child_process");
+const fs = require('fs');
+const path = require('node:path');
+
+const myArgs = process.argv.slice(2);
+const WHICH = (process.platform.startsWith('win')) ? 'set PATH=%PATH%;C:\\xampp\\php\\;D:\\xampp\\php\\ && where' : 'which';
+const SPAWNARG = (process.platform.startsWith('win')) ? { stdio: 'inherit', shell: true } : { stdio: 'inherit' };
+R = '\x1b[0;31m';
+B = '\x1b[0;34m';
+Y = '\x1b[0;33m';
+G = '\x1b[0;32m';
+N = '\x1b[0m';
+E = '\x1b[1m';
+NG = '';
+PHP = '';
+NPM = '';
+
+function copyFileSync( source, target ) {
+
+  var targetFile = target;
+
+  // If target is a directory, a new file with the same name will be created
+  if ( fs.existsSync( target ) ) {
+      if ( fs.lstatSync( target ).isDirectory() ) {
+          targetFile = path.join( target, path.basename( source ) );
+      }
+  }
+
+  fs.writeFileSync(targetFile, fs.readFileSync(source));
+}
+
+function copyFolderRecursiveSync( source, target ) {
+  var files = [];
+
+  // Check if folder needs to be created or integrated
+  var targetFolder = path.join( target, path.basename( source ) );
+  if ( !fs.existsSync( targetFolder ) ) {
+      fs.mkdirSync( targetFolder );
+  }
+
+  // Copy
+  if ( fs.lstatSync( source ).isDirectory() ) {
+      files = fs.readdirSync( source );
+      files.forEach( function ( file ) {
+          var curSource = path.join( source, file );
+          if ( fs.lstatSync( curSource ).isDirectory() ) {
+              copyFolderRecursiveSync( curSource, targetFolder );
+          } else {
+              copyFileSync( curSource, targetFolder );
+          }
+      } );
+  }
+}
+
+const usage = u => {
+  console.log(`\n${R}${E}usage${N}: node aop [Command] [ARG]\n\nCommands:
+    ${G}${E}serve${N}\t- starts ${E}Angular${N} and ${E}Codeigniter${N} develop serve at ${Y}${E}http://localhost:4200${N} and ${Y}${E}http://localhost:8085${N}
+    ${G}${E}spark${N}\t- starts ${E}Codeigniter${N} spark utility
+    ${G}${E}ng${N}   \t- calls  ${E}Angular${N} ng utility
+    ${G}${E}build${N}\t- builds a complete plug and play package on ${Y}${E}build/${N} folder
+    ${G}${E}build:others${N}- for all servers that do not support ".htaccess" this produces a complete plug-and-play package \n\t \t  on the build folder, for security reasons, "public" is the only sub-folder you have to share.
+    ${G}${E}install${N}\t- installs aop on system 
+  `);
+  process.exit(0)
+}
+
+const check = f => {
+  exec(WHICH + ' npm', (error, stdout) => {
+    if (error) {
+      console.log(`${R}${E}error:${N}${E} unable to find npm executable${N}`);
+      return;
+    } else {
+      NPM = stdout.split("\n")[0].trim().replaceAll(' ', '" "');
+      if (!fs.existsSync('node_modules')) {
+        spawnSync(NPM, ['install'], SPAWNARG);
+      }
+      exec(WHICH + ' php', (error, stdout) => {
+        if (error) {
+          console.log(`${R}${E}error:${N}${E} unable to find php executable${N}`);
+          return;
+        } else {
+          PHP = stdout.split("\n")[0].trim().replaceAll(' ', '" "');;
+          exec(WHICH + ' ng', (error, stdout) => {
+            if (error) {
+              console.log(`${G}${E}Installing missed ng command:${N}`);
+              npmprecess = spawn(NPM, ['install', '-g', '@angular/cli'], SPAWNARG);
+              npmprecess.on('exit', () => check(f));
+              return;
+            } else {
+              NG = stdout.split("\n")[0].trim().replaceAll(' ', '" "');;
+              f();
+            }
+          });
+        }
+      });
+    }
+  });
+}
+
+const serve = () => {
+  const codeigniter = spawn(PHP, ['spark', 'serve', '--port', 8085], SPAWNARG);
+  const angular = spawn(NG, ['serve'], SPAWNARG);
+  process.on('SIGINT', () => {
+    console.log(`\n\n${R}${E}Killed${N}${N}:\n ${G}✔${N} ${E}ng serve${N} with pid: ${G}${angular.pid}${N} \n ${G}✔${N} ${E}spark serve${N} with pid: ${G}${codeigniter.pid}${N}`);
+    angular.kill;
+    codeigniter.kill;
+  });
+}
+
+const buildForApache = () => {
+  fs.rmSync('build', { recursive: true, force: true });
+  fs.mkdirSync('build');
+  let files = fs.readdirSync('public');
+  for(let file of files){
+    let np = path.join('public', file);
+    if(fs.lstatSync( np ).isDirectory()){
+      copyFolderRecursiveSync(np, 'build');
+    } else {
+      copyFileSync(np, 'build');
+    }
+    
+  }
+  fs.mkdirSync(path.join('build', 'backend'));
+  copyFolderRecursiveSync('aop_modules', path.join('build', 'backend'));
+  copyFolderRecursiveSync('app', path.join('build', 'backend'));
+  copyFolderRecursiveSync('writable', path.join('build', 'backend'));
+  copyFileSync('.env', path.join('build', 'backend'));
+  copyFileSync('composer.json', path.join('build', 'backend'));
+  copyFileSync(path.join('app', '.htaccess'), path.join('build', 'backend'));
+  fs.writeFileSync(path.join('build', 'index.php'), fs.readFileSync(path.join('build', 'index.php'), 'utf-8').replaceAll('../', 'backend/'));
+  fs.mkdirSync(path.join('build', 'backend', 'cache'));
+}
+
+const buildForOthers = () => {
+  fs.rmSync('build', { recursive: true, force: true });
+  fs.mkdirSync('build');
+  copyFolderRecursiveSync('public', 'build');
+  copyFolderRecursiveSync('aop_modules', path.join('build'));
+  copyFolderRecursiveSync('app', path.join('build'));
+  copyFolderRecursiveSync('writable', path.join('build'));
+  copyFileSync('.env', path.join('build'));
+  copyFileSync('composer.json', path.join('build'));
+  copyFileSync('.htaccess', path.join('build'));
+  fs.mkdirSync(path.join('build', 'cache'));
+}
+
+const installAOP = ()=>{
+  let nodePath = path.normalize(path.join(NG, '..'));
+  copyFileSync('aop', nodePath, { overwrite: true | false });
+  if(process.platform.startsWith('win')) {
+    fs.writeFileSync(path.join(nodePath, 'aop.cmd'), `@ECHO off
+    GOTO start
+    :find_dp0
+    SET dp0=%~dp0
+    EXIT /b
+    :start
+    SETLOCAL
+    CALL :find_dp0
+    
+    IF EXIST "%dp0%\\node.exe" (
+      SET "_prog=%dp0%\\node.exe"
+    ) ELSE (
+      SET "_prog=node"
+      SET PATHEXT=%PATHEXT:;.JS;=;%
+    )
+    
+    endLocal & goto #_undefined_# 2>NUL || title %COMSPEC% & "%_prog%"  "%dp0%\\aop" %*`);
+    copyFileSync('aop.cmd', nodePath, { overwrite: true | false });
+  } else {
+    fs.chmodSync(path.join(nodePath, 'aop'), '755');
+  }
+}
+
+if (myArgs.length == 0) {
+  usage();
+} else {
+  check(() => {
+    switch (myArgs[0].toLowerCase().trim()) {
+      case 'serve':
+        serve();
+        break;
+      case 'spark':
+        spawn(PHP, myArgs, SPAWNARG);
+        break;
+      case 'ng':
+        spawn(NG, myArgs, SPAWNARG);
+        break;
+      case 'build':
+        spawnSync(NG, ['build'], SPAWNARG);
+        buildForApache();
+        break;
+      case 'build:others':
+        spawnSync(NG, ['build'], SPAWNARG);
+        buildForOthers();
+        break;
+      case 'install':
+        installAOP();
+        break;
+    }
+  });
+}
+
