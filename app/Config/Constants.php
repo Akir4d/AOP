@@ -92,3 +92,22 @@ define('EVENT_PRIORITY_NORMAL', 100);
  * @deprecated Use \CodeIgniter\Events\Events::PRIORITY_HIGH instead.
  */
 define('EVENT_PRIORITY_HIGH', 10);
+
+/*
+|--------------------------------------------------------------------------
+| Custom Constants (added by AOP)
+|--------------------------------------------------------------------------
+| Constants to be used in both Frontend and other modules
+|
+*/
+if (!(PHP_SAPI === 'cli' OR defined('STDIN')))
+{
+	// Base URL with directory support
+	$protocol = (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS'])!== 'off') ? 'https' : 'http';
+	$base_url = $protocol.'://'.$_SERVER['HTTP_HOST'];
+	$base_url.= dirname($_SERVER['SCRIPT_NAME']);
+	define('BASE_URL', $base_url);
+}
+defined('BASE_URL') || define('BASE_URL', 'http://localhost:8080');
+define('DEVEL_CSERVE', "http://localhost:8085");
+define('DEVEL_ASERVE', "http://localhost:4200");

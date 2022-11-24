@@ -2,10 +2,10 @@
 
 namespace App\Controllers\Api;
 
-class Login extends ABaseApi
+class Users extends ABaseApi
 {
     public function index()
     {
-        return 'login';
+        return 'users';
     }
 }

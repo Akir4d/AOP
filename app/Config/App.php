@@ -8,30 +8,6 @@ use CodeIgniter\Session\Handlers\FileHandler;
 class App extends BaseConfig
 {
 
-    public function __construct(){
-
-        parent::__construct();
-
-        if ($this->baseURL=='http://localhost:8085' && isset($_SERVER)) {
-            $av = array_keys($_SERVER);
-            $val = ['SERVER_NAME', 'SERVER_PORT', 'SCRIPT_NAME'];
-            if ((function ($a, $va) {
-                foreach ($va as $v) if (!in_array($v, $a)) return false;
-                return true;
-            })($av, $val)) {
-                $s = (object)$_SERVER;
-                $path = (function ($p) {
-                    array_pop($p);
-                    return implode('/', $p);
-                })(explode('/', $s->SCRIPT_NAME));
-                $http = (@$s->REQUEST_SCHEME) ? $s->REQUEST_SCHEME : 'http';
-                $this->baseURL = $http . "://" . $s->HTTP_HOST . $path;
-            }
-        } else {
-            $this->baseURL = 'http://localhost:8085';
-        }
-    }
-
     /**
      * --------------------------------------------------------------------------
      * Base Site URL
@@ -47,11 +23,9 @@ class App extends BaseConfig
      * explicitly and never rely on auto-guessing, especially in production
      * environments.
      * 
-     * AOP:  'http://localhost:8085' will be autoreplaced with auto-url
-     * 
      * @var string
      */
-    public $baseURL = 'http://localhost:8085';
+    public $baseURL = BASE_URL;
     
     /**
      * --------------------------------------------------------------------------

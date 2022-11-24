@@ -170,3 +170,4 @@ build
 /app/Views/main.php
 /composer.lock
 /package-lock.json
+writable/database.db

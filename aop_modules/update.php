@@ -12,14 +12,14 @@ if (php_sapi_name() === 'cli') {
     $PC = "\033[0m" . PHP_EOL;
     $PRE = "";
     $PREC = "" . PHP_EOL;
-} 
+}
 
 if (!extension_loaded('intl')) {
-    echo "$H1"."You have to enable php-intl in your php.ini configuration$H1C";
+    echo "$H1" . "You have to enable php-intl in your php.ini configuration$H1C";
     die();
 }
 if (!extension_loaded('gd')) {
-    echo "$H1"."You have to enable php-gd in your php.ini configuration$H1C";
+    echo "$H1" . "You have to enable php-gd in your php.ini configuration$H1C";
     die();
 }
 
@@ -28,16 +28,18 @@ $updateDir = realpath($composerPath . DIRECTORY_SEPARATOR . 'aop_modules' . DIRE
 $updateFile = $updateDir . DIRECTORY_SEPARATOR . 'firstup.info.txt';
 
 if (!file_exists($composerPath . DIRECTORY_SEPARATOR . 'vendor') || !file_exists($updateFile)) {
-    
-    if (php_sapi_name() !== 'cli')   {
+
+    if (php_sapi_name() !== 'cli') {
         @apache_setenv('no-gzip', 1);
         @ini_set('zlib.output_compression', 0);
         @ini_set('implicit_flush', 1);
-        for ($i = 0; $i < ob_get_level(); $i++) { ob_end_flush(); }
+        for ($i = 0; $i < ob_get_level(); $i++) {
+            ob_end_flush();
+        }
         ob_implicit_flush(1);
         include "header.php";
     }
-    
+
     function removeFolder($folderName)
     {
         if (is_dir($folderName)) $folderHandle = opendir($folderName);
@@ -69,7 +71,7 @@ if (!file_exists($composerPath . DIRECTORY_SEPARATOR . 'vendor') || !file_exists
         $composerPhar = new Phar($exec);
         echo "\n-Unpack Composer...  ";
         //php.ini setting phar.readonly must be set to 0
-        echo ($composerPhar->extractTo($updateTemp))?"Success! \n":"Fail! \n";
+        echo ($composerPhar->extractTo($updateTemp)) ? "Success! \n" : "Fail! \n";
     }
     echo "-Exec Composer...\n";
     require_once($updateDir . '/composer/vendor/autoload.php');
@@ -77,41 +79,59 @@ if (!file_exists($composerPath . DIRECTORY_SEPARATOR . 'vendor') || !file_exists
     define('COMPOSER_HOME', $composerPath);
     define('HOME', $composerPath);
     putenv('COMPOSER_HOME=' . $composerPath);
-    $composer = new ComposerCommandLine();
-    $composer->update();
-    echo $PREC;
-    file_put_contents($updateFile, "done", FILE_APPEND);
-    unlink($exec);
-    removeFolder($updateTemp);
-    $spark=preg_replace(
+    $success = true;
+    @unlink($updateFile);
+    try {
+        $composer = new ComposerCommandLine();
+        $composer->update();
+        echo $PREC;
+        unlink($exec);
+        removeFolder($updateTemp);
+    } catch (\Throwable $e) {
+        $success = false;
+    }
+    if($success) file_put_contents($updateFile, "done", FILE_APPEND);
+    $spark = preg_replace(
         '/\<\?php/',
         '<?php' . PHP_EOL . 'include realpath("aop_modules/update.php");',
         file_get_contents(realpath($composerPath . '/vendor/codeigniter4/framework/spark')),
         1
     );
 
-    $index=preg_replace(
+    $index = preg_replace(
         '/\<\?php/',
         '<?php' . PHP_EOL . 'include realpath("../aop_modules/update.php");',
         file_get_contents(realpath($composerPath . '/vendor/codeigniter4/framework/public/index.php')),
         1
     );
 
-    file_put_contents($composerPath . '/aop_modules/index.php',$index);
-    if(file_exists($composerPath . '/public')) {
-        file_put_contents($composerPath . '/public/index.php',$index);
+    file_put_contents($composerPath . '/aop_modules/index.php', $index);
+    if (!file_exists($composerPath . '/../backend')) {
+        file_put_contents($composerPath . '/public/index.php', $index);
     } else {
-        $index=str_replace('../','backend/', $index);
-        $spark=str_replace('public','..', $spark);
-        file_put_contents($composerPath . '/../index.php',$index);
+        $index = str_replace('../', 'backend/', $index);
+        $spark = str_replace('public', '..', $spark);
+        file_put_contents($composerPath . '/../index.php', $index);
     }
 
-    file_put_contents($composerPath . '/spark',$spark);
-    
+    file_put_contents($composerPath . '/spark', $spark);
+
     if (php_sapi_name() !== 'cli') {
         echo '<script>setTimeout(()=>parent.window.location.reload(true), 10000);</script>';
-        //getenv('path');
-        //echo '<pre>', var_dump($_ENV), '</pre>';
+        /* 
+             
+        require_once realpath($composerPath . '/vendor/autoload.php');
+        $dotenv = \Dotenv\Dotenv::createUnsafeMutable($composerPath);
+        $dotenv->load();
+        try {
+            $dotenv->required(['database.default.hostname', 'database.default.database', 'database.default.username', 'database.default.password']);
+        } catch (\Throwable $e) {
+            echo 'DB config';
+            putenv('database.default.hostname=localhost');
+        } 
+        echo '<pre>', var_dump($_ENV), '</pre>';
+
+        */
         echo '</section></body></html>';
         die();
     }

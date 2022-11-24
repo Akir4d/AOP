@@ -1,11 +1,15 @@
 #!/usr/bin/env node
+const version = 0.16;
 const { exec, spawn, spawnSync } = require("child_process");
 const fs = require('fs');
 const path = require('node:path');
-
 const myArgs = process.argv.slice(2);
 const WHICH = (process.platform.startsWith('win')) ? 'set PATH=%PATH%;C:\\xampp\\php\\;D:\\xampp\\php\\ && where' : 'which';
 const SPAWNARG = (process.platform.startsWith('win')) ? { stdio: 'inherit', shell: true } : { stdio: 'inherit' };
+const params = {};
+const readline = require('readline');
+
+
 R = '\x1b[0;31m';
 B = '\x1b[0;34m';
 Y = '\x1b[0;33m';
@@ -15,41 +19,138 @@ E = '\x1b[1m';
 NG = '';
 PHP = '';
 NPM = '';
+ftpPort = 21;
+ftpSecure = false;
 
-function copyFileSync( source, target ) {
+
+
+class FTPClient {
+  constructor(ftp, host = 'localhost', port = 21, username = 'anonymous', password = 'guest', secure = false) {
+    this.client = new ftp.Client();
+    this.settings = {
+      host: host,
+      port: port,
+      user: username,
+      password: password,
+      secure: secure
+    };
+  }
+
+  upload(sourcePath, remotePath) {
+    let self = this;
+    console.log(remotePath);
+    self.client.ftp.verbose = true;
+    (async () => {
+      try {
+        await self.client.access(self.settings);
+        await self.client.uploadFromDir(sourcePath, remotePath);
+      } catch (err) {
+        console.log(err);
+      }
+      self.client.close();
+    })();
+  }
+
+  close() {
+    this.client.close();
+  }
+
+  changePermissions(perms, filepath) {
+    let cmd = 'SITE CHMOD ' + perms + ' ' + filepath;
+    return this.client.send(cmd, false);
+  }
+}
+
+const parseArguments = () => {
+  for (let a = 0; myArgs.length > a; a++) {
+    let m = myArgs[a];
+    if (typeof m == 'string' && m.startsWith('-')) {
+      switch (m.split('=')[0]) {
+        case '-c':
+          params.copy = myArgs[++a];
+          break;
+        case '--copy':
+          params.copy = m.split('=')[1];
+          break;
+        case '-p':
+          ftpPort = myArgs[++a];
+          break;
+        case '--port':
+          ftpPort = m.split('=')[1];
+          break;
+      }
+    } else {
+      if (!params.hasOwnProperty('command')) params.command = m;
+    }
+  }
+}
+
+const copyFileSync = (source, target) => {
 
   var targetFile = target;
 
   // If target is a directory, a new file with the same name will be created
-  if ( fs.existsSync( target ) ) {
-      if ( fs.lstatSync( target ).isDirectory() ) {
-          targetFile = path.join( target, path.basename( source ) );
-      }
+  if (fs.existsSync(target)) {
+    if (fs.lstatSync(target).isDirectory()) {
+      targetFile = path.join(target, path.basename(source));
+    }
   }
-
   fs.writeFileSync(targetFile, fs.readFileSync(source));
 }
 
-function copyFolderRecursiveSync( source, target ) {
+const ftpSync = (source, target) => {
+  var ftp = null;
+  try {
+    ftp = require(path.join(process.cwd(), 'node_modules', 'basic-ftp'));
+  } catch (e) {
+    console.log(e);
+    console.log(`${R}${E}you have to add basic-ftp${N}, ${Y}${E}install it with${N}:\n ${E}npm install basic-ftp --save ${N}`);
+  }
+  if (ftp != null) {
+    let [cred, chost] = target.split('@');
+    let [user, pass] = cred.split(':');
+    let [host, tar] = chost.split(':');
+    tar = (tar == null) ? '' : tar;
+    const ftpClient = new FTPClient(ftp, host, ftpPort, user, pass, ftpSecure);
+    ftpClient.upload(source, tar);
+  }
+}
+
+const copyFolderRecursiveSync = (source, target) => {
   var files = [];
 
   // Check if folder needs to be created or integrated
-  var targetFolder = path.join( target, path.basename( source ) );
-  if ( !fs.existsSync( targetFolder ) ) {
-      fs.mkdirSync( targetFolder );
+  var targetFolder = path.join(target, path.basename(source));
+  if (!fs.existsSync(targetFolder)) {
+    fs.mkdirSync(targetFolder);
   }
 
   // Copy
-  if ( fs.lstatSync( source ).isDirectory() ) {
-      files = fs.readdirSync( source );
-      files.forEach( function ( file ) {
-          var curSource = path.join( source, file );
-          if ( fs.lstatSync( curSource ).isDirectory() ) {
-              copyFolderRecursiveSync( curSource, targetFolder );
-          } else {
-              copyFileSync( curSource, targetFolder );
-          }
-      } );
+  if (fs.lstatSync(source).isDirectory()) {
+    files = fs.readdirSync(source);
+    files.forEach(function (file) {
+      var curSource = path.join(source, file);
+      if (fs.lstatSync(curSource).isDirectory()) {
+        copyFolderRecursiveSync(curSource, targetFolder);
+      } else {
+        copyFileSync(curSource, targetFolder);
+      }
+    });
+  }
+}
+
+const copyInsideSourceRecursiveSync = (source, target) => {
+  if (!fs.existsSync(target)) {
+    fs.mkdirSync(target);
+  }
+  let files = fs.readdirSync(source);
+  for (let file of files) {
+    let np = path.join(source, file);
+    if (fs.lstatSync(np).isDirectory()) {
+      copyFolderRecursiveSync(np, target);
+    } else {
+      copyFileSync(np, target);
+    }
   }
 }
 
@@ -60,7 +161,11 @@ const usage = u => {
     ${G}${E}ng${N}   \t- calls  ${E}Angular${N} ng utility
     ${G}${E}build${N}\t- builds a complete plug and play package on ${Y}${E}build/${N} folder
     ${G}${E}build:others${N}- for all servers that do not support ".htaccess" this produces a complete plug-and-play package \n\t \t  on the build folder, for security reasons, "public" is the only sub-folder you have to share.
-    ${G}${E}install${N}\t- installs aop on system 
+    ${G}${E}copy${N}\t- copy your build to a folder or remote ftp server with syntax ${Y}${E}ftp://user:pass@host[:path]${N}
+    ${G}${E}install${N}\t- installs aop on system
+    \n\nOptions:
+    ${G}${E}-c${N} path or ${G}${E}--copy=path${N}\t after build command will copy the build to a folder or remote ftp server with syntax ${Y}${E}ftp://user:pass@host[:path]${N}
+    ${G}${E}-p${N} port or ${G}${E}--port=port${N}\t change the default ftp port.\n\nversion: ${version}
   `);
   process.exit(0)
 }
@@ -99,6 +204,7 @@ const check = f => {
 }
 
 const serve = () => {
+  if (!fs.existsSync('.env')) copyFileSync('env_develop', '.env');
   const codeigniter = spawn(PHP, ['spark', 'serve', '--port', 8085], SPAWNARG);
   const angular = spawn(NG, ['serve'], SPAWNARG);
   process.on('SIGINT', () => {
@@ -108,47 +214,60 @@ const serve = () => {
   });
 }
 
-const buildForApache = () => {
+const buildForApache = e => {
   fs.rmSync('build', { recursive: true, force: true });
-  fs.mkdirSync('build');
-  let files = fs.readdirSync('public');
-  for(let file of files){
-    let np = path.join('public', file);
-    if(fs.lstatSync( np ).isDirectory()){
-      copyFolderRecursiveSync(np, 'build');
-    } else {
-      copyFileSync(np, 'build');
-    }
-    
-  }
+  copyInsideSourceRecursiveSync('public', 'build');
   fs.mkdirSync(path.join('build', 'backend'));
   copyFolderRecursiveSync('aop_modules', path.join('build', 'backend'));
   copyFolderRecursiveSync('app', path.join('build', 'backend'));
   copyFolderRecursiveSync('writable', path.join('build', 'backend'));
-  copyFileSync('.env', path.join('build', 'backend'));
+  copyFileSync('env_production', path.join('build', 'backend', '.env'));
   copyFileSync('composer.json', path.join('build', 'backend'));
   copyFileSync(path.join('app', '.htaccess'), path.join('build', 'backend'));
   fs.writeFileSync(path.join('build', 'index.php'), fs.readFileSync(path.join('build', 'index.php'), 'utf-8').replaceAll('../', 'backend/'));
   fs.mkdirSync(path.join('build', 'backend', 'cache'));
+  copyBuild();
 }
 
-const buildForOthers = () => {
+const buildForOthers = e => {
   fs.rmSync('build', { recursive: true, force: true });
   fs.mkdirSync('build');
   copyFolderRecursiveSync('public', 'build');
   copyFolderRecursiveSync('aop_modules', path.join('build'));
   copyFolderRecursiveSync('app', path.join('build'));
   copyFolderRecursiveSync('writable', path.join('build'));
-  copyFileSync('.env', path.join('build'));
+  copyFileSync('env_production', path.join('build', '.env'));
   copyFileSync('composer.json', path.join('build'));
   copyFileSync('.htaccess', path.join('build'));
   fs.mkdirSync(path.join('build', 'cache'));
+  copyBuild();
 }
 
-const installAOP = ()=>{
+const copyBuild = () => {
+  if (params.hasOwnProperty('copy')) {
+    for (let rem of ['public', 'index.php', 'main.html', '.env', '.htaccess'])
+      if (fs.existsSync(path.join(params.copy, rem)))
+        fs.rmSync(path.join(params.copy, rem), { recursive: true, force: true });
+    switch (params.copy.slice(0, 6)) {
+      case 'ftp://':
+        ftpSync('build', params.copy.slice(6));
+        break;
+      case 'sftp:/':
+      case 'ftps:/':
+        ftpSecure = true;
+        ftpSync('build', params.copy.slice(7));
+        break;
+      default:
+        copyInsideSourceRecursiveSync('build', params.copy);
+    }
+  }
+}
+
+const installAOP = e => {
+  if (!fs.existsSync('.env')) copyFileSync('env_develop', '.env');
   let nodePath = path.normalize(path.join(NG, '..'));
   copyFileSync('aop', nodePath, { overwrite: true | false });
-  if(process.platform.startsWith('win')) {
+  if (process.platform.startsWith('win')) {
     fs.writeFileSync(path.join(nodePath, 'aop.cmd'), `@ECHO off
     GOTO start
     :find_dp0
@@ -166,38 +285,77 @@ const installAOP = ()=>{
     )
     
     endLocal & goto #_undefined_# 2>NUL || title %COMSPEC% & "%_prog%"  "%dp0%\\aop" %*`);
-    copyFileSync('aop.cmd', nodePath, { overwrite: true | false });
+    copyFileSync('aop.cmd', nodePath);
   } else {
     fs.chmodSync(path.join(nodePath, 'aop'), '755');
   }
 }
 
-if (myArgs.length == 0) {
-  usage();
-} else {
-  check(() => {
-    switch (myArgs[0].toLowerCase().trim()) {
-      case 'serve':
-        serve();
-        break;
-      case 'spark':
-        spawn(PHP, myArgs, SPAWNARG);
-        break;
-      case 'ng':
-        spawn(NG, myArgs, SPAWNARG);
-        break;
-      case 'build':
-        spawnSync(NG, ['build'], SPAWNARG);
-        buildForApache();
-        break;
-      case 'build:others':
-        spawnSync(NG, ['build'], SPAWNARG);
-        buildForOthers();
-        break;
-      case 'install':
-        installAOP();
-        break;
-    }
-  });
+
+const menu = () => {
+  parseArguments(myArgs);
+  switch (params.command) {
+    case 'serve':
+      serve();
+      break;
+    case 'spark':
+      spawn(PHP, myArgs, SPAWNARG);
+      break;
+    case 'ng':
+      spawn(NG, myArgs, SPAWNARG);
+      break;
+    case 'build':
+      spawnSync(NG, ['build'], SPAWNARG);
+      buildForApache();
+      break;
+    case 'build:others':
+      spawnSync(NG, ['build'], SPAWNARG);
+      buildForOthers();
+      break;
+    case 'install':
+      installAOP();
+      break;
+    case 'copy':
+      params.copy = myArgs[1];
+      copyBuild();
+      break;
+    default:
+      usage();
+  }
 }
+
+let filePath = path.join(process.cwd(), 'aop');
+if (fs.existsSync(filePath)) {
+  const fileContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
+  let pathVersion = parseFloat(fileContent.split('\n')[1].split('=')[1].split(';')[0].trim());
+  if (pathVersion > version) {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+    rl.question(`${Y}${E}Detected new aop version (${pathVersion}) in this folder, would you like to update ${N}? [${G}${E}yes${N}]/${R}${E}no${N} `, ans => {
+      if (ans !== 'no') {
+        check(() => {
+          installAOP();
+          console.log(`${R}${E}Reload this script${N}`);
+          process.exit(0);
+        });
+      } else {
+        myStart();
+      }
+
+    });
+  } else {
+    myStart();
+  }
+}
+
+function myStart() {
+  if (myArgs.length == 0) {
+    usage();
+  } else {
+    check(menu);
+  }
+}
+
 

@@ -14,7 +14,7 @@
 # ENVIRONMENT
 #--------------------------------------------------------------------
 
-# CI_ENVIRONMENT = production
+CI_ENVIRONMENT = production
 
 #--------------------------------------------------------------------
 # APP
@@ -45,6 +45,18 @@
 # database.default.password = root
 # database.default.DBDriver = MySQLi
 # database.default.DBPrefix =
+# database.default.port = 3306
+
+database.default.hostname = ''
+database.default.database = 'database.db'
+database.default.username = ''
+database.default.password = ''
+database.default.DBDriver = sqlite3
+database.default.DBPrefix = 'aop_'
+database.default.DBDebug = true
+database.default.charset  = 'utf8'
+database.default.DBCollat = 'utf8_general_ci'
+
 # database.default.port = 3306
 
 # database.tests.hostname = localhost
@@ -98,7 +110,7 @@
 # ENCRYPTION
 #--------------------------------------------------------------------
 
-# encryption.key =
+# encryption.key = hex2bin:604cb2a5cfd30e69c02cfc7f45b782ef6fbd0148f7df1a46a1d82268ab9a0fa0
 # encryption.driver = OpenSSL
 # encryption.blockSize = 16
 # encryption.digest = SHA512

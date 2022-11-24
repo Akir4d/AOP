@@ -10,7 +10,7 @@ import { environment } from './../environments/environment';
 })
 export class AppComponent {
   api = environment.api;
-  title = 'primeng-sandbox';
+  title = 'angular-on-php';
   constructor(private router: Router ) {
     console.log(router.url);
   }

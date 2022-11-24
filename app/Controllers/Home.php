@@ -4,14 +4,14 @@ namespace App\Controllers;
 
 class Home extends BaseController
 {
+    
     public function index()
     {
-        $du="http://localhost:8085";
+        $du=DEVEL_CSERVE;
         $file=FCPATH . 'main.html';
-
         if (substr(base_url(), 0, strlen($du))==$du) {
-            $du='http://localhost:4200/';
-            $file = 'http://localhost:4200/main.html';
+            $du=DEVEL_ASERVE;
+            $file = $du.'/main.html';
             file_put_contents(APPPATH . "Views/main.php", preg_replace('/<base.*?>/m', '<base href="'.$du.'">', file_get_contents($file)));
         } else {
             if(file_exists($file)) {
