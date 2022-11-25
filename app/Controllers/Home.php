@@ -7,6 +7,12 @@ class Home extends BaseController
     
     public function index()
     {
+        $migrate = \Config\Services::migrations();
+        try {
+            $migrate->latest();
+        } catch (\Throwable $e) {
+            // Do something with the error here...
+        }
         $du=DEVEL_CSERVE;
         $file=FCPATH . 'main.html';
         if (substr(base_url(), 0, strlen($du))==$du) {
@@ -25,6 +31,10 @@ class Home extends BaseController
     }
 
     public function blank(){
+        
+        $userModel = new \App\Models\Api\Users();
+        //$userModel->save(['email'=>'liadserv@gmail.com', 'first_name'=>'Paolo', 'last_name' =>'Rampino', 'password' => '1234']);
+        var_dump($userModel->findAll());
         return 'pippo';
     }
 }

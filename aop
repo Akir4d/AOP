@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const version = 0.16;
+const version = 0.18;
 const { exec, spawn, spawnSync } = require("child_process");
 const fs = require('fs');
 const path = require('node:path');
@@ -8,7 +8,6 @@ const WHICH = (process.platform.startsWith('win')) ? 'set PATH=%PATH%;C:\\xampp\
 const SPAWNARG = (process.platform.startsWith('win')) ? { stdio: 'inherit', shell: true } : { stdio: 'inherit' };
 const params = {};
 const readline = require('readline');
-
 
 R = '\x1b[0;31m';
 B = '\x1b[0;34m';
@@ -19,9 +18,9 @@ E = '\x1b[1m';
 NG = '';
 PHP = '';
 NPM = '';
-ftpPort = 21;
-ftpSecure = false;
-
+var ftpPort = 21;
+var ftpSecure = false;
+var forceClean = false;
 
 
 class FTPClient {
@@ -36,53 +35,125 @@ class FTPClient {
     };
   }
 
+  async setup() {
+    if (this.client.closed) {
+      this.client.trackProgress(info => {
+        info.name=info.name.length?info.name:"Listing";
+        let tabs = makeTab(info.name+info.type, 45);
+        let trans = (info.type=="upload")?G+E+"Tr"+N:E+"Pr"+N;
+        if(info.bytes) {
+          let kb = info.bytes/1000;
+          let tt=makeTab(String(kb), 10);
+          console.log(info.type, "->", B+E+info.name+N, tabs, trans, tt ,info.bytes/1000, "kB");
+        }
+      })
+      await this.client.access(this.settings);
+    }
+  }
+
+  async removeByExtension(ext) {
+    let files = await this.client.list();
+    for (let file of files) {
+      if (file.type == 1 && file.name.includes('.' + ext)) {
+        await this.client.remove(file.name);
+      }
+    }
+  }
+
+  async exists(exist) {
+    let files = await this.client.list();
+    for (let file of files) {
+      if (file.name == exists) {
+        return true;
+      }
+    }
+  }
+
+
+  async removeAngularFiles() {
+    await this.removeByExtension('css');
+    await this.removeByExtension('js');
+    await this.removeByExtension('html');
+  }
+
   upload(sourcePath, remotePath) {
-    let self = this;
-    console.log(remotePath);
-    self.client.ftp.verbose = true;
     (async () => {
       try {
-        await self.client.access(self.settings);
-        await self.client.uploadFromDir(sourcePath, remotePath);
+        await this.setup();
+        if (forceClean) {
+          await this.client.ensureDir(remotePath);
+          await this.client.clearWorkingDir();
+        } else {
+          await this.removeAngularFiles();
+        }
+        await this.client.uploadFromDir(sourcePath, remotePath);
+        if (fs.existsSync(path.join(sourcePath, 'backend'))) {
+          await this.client.cd('backend');
+        }
+        await this.client.cd('aop_modules');
+        await this.client.cd('versions');
+        await this.removeByExtension('txt');
       } catch (err) {
         console.log(err);
       }
-      self.client.close();
+      this.close();
     })();
   }
 
   close() {
     this.client.close();
+    process.exit(0);
   }
 
-  changePermissions(perms, filepath) {
-    let cmd = 'SITE CHMOD ' + perms + ' ' + filepath;
-    return this.client.send(cmd, false);
-  }
 }
 
 const parseArguments = () => {
   for (let a = 0; myArgs.length > a; a++) {
     let m = myArgs[a];
     if (typeof m == 'string' && m.startsWith('-')) {
-      switch (m.split('=')[0]) {
+      let search = m.split('=')[0];
+      switch (search) {
+        case '-u':
+          params.username = myArgs[++a];
+          break;
+        case '--username':
+          params.username = m.split('=')[1];
+          break;
+        case '-p':
+          params.password = myArgs[++a];
+          break;
+        case '--password':
+          params.password = m.split('=')[1];
+          break;
         case '-c':
           params.copy = myArgs[++a];
           break;
         case '--copy':
           params.copy = m.split('=')[1];
           break;
-        case '-p':
+        case '-fp':
           ftpPort = myArgs[++a];
           break;
-        case '--port':
+        case '--ftp-port':
           ftpPort = m.split('=')[1];
+          break;
+        case '--force-clean':
+          forceClean = true;
           break;
       }
     } else {
       if (!params.hasOwnProperty('command')) params.command = m;
     }
   }
+}
+
+const makeTab = (name, len) => {
+  let t = (name>0)?parseInt(name):1;
+  t=len-name.length;
+  t=t>0?t:1;
+  let tabs = "";
+  for(let a=0;t>a;a++)tabs+=" "
+  return tabs;
 }
 
 const copyFileSync = (source, target) => {
@@ -99,16 +170,45 @@ const copyFileSync = (source, target) => {
 }
 
 const ftpSync = (source, target) => {
+  if (forceClean) {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+    rl.question(`${R}${E}--force-clean\n\n is a personal developer feature that will erase all files from the ftp remote folder before copying on it.\n\n - Are you sure you want to use it?\n\n - Have you backed up this folder? ${N} [${G}${E}NO${N}]/${R}${E}yes${N} `, ans => {
+      if (ans == 'yes') {
+        ftpSyncReal(source, target);
+      } else {
+        process.exit(0);
+      }
+    });
+  } else {
+    ftpSyncReal(source, target);
+  }
+
+}
+
+
+const ftpSyncReal = (source, target) => {
   var ftp = null;
   try {
     ftp = require(path.join(process.cwd(), 'node_modules', 'basic-ftp'));
   } catch (e) {
-    console.log(e);
-    console.log(`${R}${E}you have to add basic-ftp${N}, ${Y}${E}install it with${N}:\n ${E}npm install basic-ftp --save ${N}`);
+    spawnSync(NPM, ['install', 'basic-ftp', '--save'], SPAWNARG);
+    ftp = require(path.join(process.cwd(), 'node_modules', 'basic-ftp'));
   }
+
   if (ftp != null) {
-    let [cred, chost] = target.split('@');
-    let [user, pass] = cred.split(':');
+    let cred, chost, user, pass = '';
+    if (params.hasOwnProperty('username')) {
+      user = params.username;
+      pass = params.password;
+      let ll = target.split('@');
+      chost = (typeof ll[1] == "undefined")?ll[0]:ll[1];
+    } else {
+      [cred, chost] = target.split('@');
+      [user, pass] = cred.split(':');
+    }
     let [host, tar] = chost.split(':');
     tar = (tar == null) ? '' : tar;
     const ftpClient = new FTPClient(ftp, host, ftpPort, user, pass, ftpSecure);
@@ -139,13 +239,16 @@ const copyFolderRecursiveSync = (source, target) => {
   }
 }
 
-const copyInsideSourceRecursiveSync = (source, target) => {
+const copyInsideSourceRecursiveSync = (source, target, show=false) => {
   if (!fs.existsSync(target)) {
     fs.mkdirSync(target);
   }
   let files = fs.readdirSync(source);
+  
   for (let file of files) {
     let np = path.join(source, file);
+    
+    if(show)console.log('copying', B+E+np+N, makeTab(np,50),'->', G+E+target+N)
     if (fs.lstatSync(np).isDirectory()) {
       copyFolderRecursiveSync(np, target);
     } else {
@@ -258,10 +361,18 @@ const copyBuild = () => {
         ftpSync('build', params.copy.slice(7));
         break;
       default:
-        copyInsideSourceRecursiveSync('build', params.copy);
+        copyInsideSourceRecursiveSync('build', params.copy, true);
+        let fistup = ['aop_modules', 'versions', 'firstup.info.txt'];
+        if (fs.existsSync(path.join(params.copy, 'backend', ...fistup))) {
+          fs.rmSync(path.join(params.copy, 'backend', ...fistup));
+        } 
+        if (fs.existsSync(path.join(params.copy, ...fistup))) {
+          fs.rmSync(path.join(params.copy, ...fistup));
+        }  
     }
   }
 }
+
 
 const installAOP = e => {
   if (!fs.existsSync('.env')) copyFileSync('env_develop', '.env');
