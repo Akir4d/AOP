@@ -109,5 +109,3 @@ if (!(PHP_SAPI === 'cli' OR defined('STDIN')))
 	define('BASE_URL', $base_url);
 }
 defined('BASE_URL') || define('BASE_URL', 'http://localhost:8080');
-define('DEVEL_CSERVE', "http://localhost:8085");
-define('DEVEL_ASERVE', "http://localhost:4200");

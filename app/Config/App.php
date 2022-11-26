@@ -110,7 +110,7 @@ class App extends BaseConfig
      *
      * @var string
      */
-    public $appTimezone = 'America/Chicago';
+    public $appTimezone = 'Europe/Rome';
 
     /**
      * --------------------------------------------------------------------------
@@ -164,7 +164,7 @@ class App extends BaseConfig
      *
      * @var string
      */
-    public $sessionCookieName = 'ci_session';
+    public $sessionCookieName = 'aop_session';
 
     /**
      * --------------------------------------------------------------------------

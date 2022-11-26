@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const version = 0.18;
+const version = 0.19;
 const { exec, spawn, spawnSync } = require("child_process");
 const fs = require('fs');
 const path = require('node:path');
@@ -316,14 +316,14 @@ const serve = () => {
     codeigniter.kill;
   });
 }
-
+cd 
 const buildForApache = e => {
   fs.rmSync('build', { recursive: true, force: true });
   copyInsideSourceRecursiveSync('public', 'build');
   fs.mkdirSync(path.join('build', 'backend'));
   copyFolderRecursiveSync('aop_modules', path.join('build', 'backend'));
   copyFolderRecursiveSync('app', path.join('build', 'backend'));
-  copyFolderRecursiveSync('writable', path.join('build', 'backend'));
+  copyFolderRecursiveSync(path.join('vendor','codeigniter4','framework','writable'), path.join('build', 'backend'));
   copyFileSync('env_production', path.join('build', 'backend', '.env'));
   copyFileSync('composer.json', path.join('build', 'backend'));
   copyFileSync(path.join('app', '.htaccess'), path.join('build', 'backend'));
@@ -338,7 +338,7 @@ const buildForOthers = e => {
   copyFolderRecursiveSync('public', 'build');
   copyFolderRecursiveSync('aop_modules', path.join('build'));
   copyFolderRecursiveSync('app', path.join('build'));
-  copyFolderRecursiveSync('writable', path.join('build'));
+  copyFolderRecursiveSync(copyFolderRecursiveSync(path.join('vendor','codeigniter4','framework','writable')), path.join('build'));
   copyFileSync('env_production', path.join('build', '.env'));
   copyFileSync('composer.json', path.join('build'));
   copyFileSync('.htaccess', path.join('build'));
@@ -429,6 +429,11 @@ const menu = () => {
     case 'copy':
       params.copy = myArgs[1];
       copyBuild();
+      break;
+    case 'hash':
+      process.stdout.write(`\n${E}The hash for ${G}${E}${myArgs[1]}${N}${E} is ${N}${Y}${E}`);
+      spawnSync(PHP, ["-r", `echo password_hash('${myArgs[1]}', PASSWORD_DEFAULT);`], SPAWNARG);
+      process.stdout.write(`${N}\n\n`);
       break;
     default:
       usage();

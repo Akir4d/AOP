@@ -2,9 +2,9 @@
 
 namespace App\Controllers\Api;
 
-use App\Controllers\BaseController;
+use App\Controllers\AopBaseController;
 
-abstract class ABaseApi extends BaseController
+abstract class ABaseApi extends AopBaseController
 {
 
 }

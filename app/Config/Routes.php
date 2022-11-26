@@ -19,12 +19,12 @@ if (is_file(SYSTEMPATH . 'Config/Routes.php')) {
  * --------------------------------------------------------------------
  */
 $routes->setDefaultNamespace('App\Controllers');
-$routes->setDefaultController('Home');
+$routes->setDefaultController('Aop');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
 
 // AOP: This will send all undiscovered pages to Angular framework.
-$routes->set404Override('App\Controllers\Home::index');
+$routes->set404Override('App\Controllers\Aop::index');
 
 // The Auto Routing (Legacy) is very dangerous. It is easy to create vulnerable apps
 // where controller filters or CSRF protection are bypassed.
@@ -44,7 +44,7 @@ $routes->setAutoRoute(true);
 // route since we don't have to scan directories.
 
 // AOP: This will modify Angular's base url so that it may be redistributed everywhere.
-$routes->get('/', 'Home::index');
+$routes->get('/', 'Aop::index');
 
 /*
  * --------------------------------------------------------------------

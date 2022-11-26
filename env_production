@@ -150,3 +150,5 @@ database.default.DBCollat = 'utf8_general_ci'
 #--------------------------------------------------------------------
 
 # curlrequest.shareOptions = true
+aop.emergency.username = $2y$10$JOPwqALJ05Tby6LP9ZvXQOJmPErUud.bDyiKbpmaB2RHAPV6fE1MO
+aop.emergency.password = $2y$10$6EWtXD0zgVea4w7Is4K80OUhcwgb5fWz6BqCzYJUcUuzTMEYxWVfK
