@@ -1,13 +1,14 @@
 #!/usr/bin/env node
-const version = 0.19;
+const version = 0.21;
 const { exec, spawn, spawnSync } = require("child_process");
 const fs = require('fs');
 const path = require('node:path');
 const myArgs = process.argv.slice(2);
 const WHICH = (process.platform.startsWith('win')) ? 'set PATH=%PATH%;C:\\xampp\\php\\;D:\\xampp\\php\\ && where' : 'which';
-const SPAWNARG = (process.platform.startsWith('win')) ? { stdio: 'inherit', shell: true } : { stdio: 'inherit' };
+const SPAWNARG = { stdio: 'inherit', shell: true }
 const params = {};
 const readline = require('readline');
+const MAINMODULE = 'main';
 
 R = '\x1b[0;31m';
 B = '\x1b[0;34m';
@@ -38,13 +39,13 @@ class FTPClient {
   async setup() {
     if (this.client.closed) {
       this.client.trackProgress(info => {
-        info.name=info.name.length?info.name:"Listing";
-        let tabs = makeTab(info.name+info.type, 45);
-        let trans = (info.type=="upload")?G+E+"Tr"+N:E+"Pr"+N;
-        if(info.bytes) {
-          let kb = info.bytes/1000;
-          let tt=makeTab(String(kb), 10);
-          console.log(info.type, "->", B+E+info.name+N, tabs, trans, tt ,info.bytes/1000, "kB");
+        info.name = info.name.length ? info.name : "Listing";
+        let tabs = makeTab(info.name + info.type, 45);
+        let trans = (info.type == "upload") ? G + E + "Tr" + N : E + "Pr" + N;
+        if (info.bytes) {
+          let kb = info.bytes / 1000;
+          let tt = makeTab(String(kb), 10);
+          console.log(info.type, "->", B + E + info.name + N, tabs, trans, tt, info.bytes / 1000, "kB");
         }
       })
       await this.client.access(this.settings);
@@ -148,11 +149,11 @@ const parseArguments = () => {
 }
 
 const makeTab = (name, len) => {
-  let t = (name>0)?parseInt(name):1;
-  t=len-name.length;
-  t=t>0?t:1;
+  let t = (name > 0) ? parseInt(name) : 1;
+  t = len - name.length;
+  t = t > 0 ? t : 1;
   let tabs = "";
-  for(let a=0;t>a;a++)tabs+=" "
+  for (let a = 0; t > a; a++)tabs += " "
   return tabs;
 }
 
@@ -188,7 +189,6 @@ const ftpSync = (source, target) => {
 
 }
 
-
 const ftpSyncReal = (source, target) => {
   var ftp = null;
   try {
@@ -204,7 +204,7 @@ const ftpSyncReal = (source, target) => {
       user = params.username;
       pass = params.password;
       let ll = target.split('@');
-      chost = (typeof ll[1] == "undefined")?ll[0]:ll[1];
+      chost = (typeof ll[1] == "undefined") ? ll[0] : ll[1];
     } else {
       [cred, chost] = target.split('@');
       [user, pass] = cred.split(':');
@@ -239,16 +239,16 @@ const copyFolderRecursiveSync = (source, target) => {
   }
 }
 
-const copyInsideSourceRecursiveSync = (source, target, show=false) => {
+const copyInsideSourceRecursiveSync = (source, target, show = false) => {
   if (!fs.existsSync(target)) {
     fs.mkdirSync(target);
   }
   let files = fs.readdirSync(source);
-  
+
   for (let file of files) {
     let np = path.join(source, file);
-    
-    if(show)console.log('copying', B+E+np+N, makeTab(np,50),'->', G+E+target+N)
+
+    if (show) console.log('copying', B + E + np + N, makeTab(np, 50), '->', G + E + target + N)
     if (fs.lstatSync(np).isDirectory()) {
       copyFolderRecursiveSync(np, target);
     } else {
@@ -306,24 +306,44 @@ const check = f => {
   });
 }
 
-const serve = () => {
+const serve = (module) => {
   if (!fs.existsSync('.env')) copyFileSync('env_develop', '.env');
   const codeigniter = spawn(PHP, ['spark', 'serve', '--port', 8085], SPAWNARG);
+  SPAWNARG.cwd = path.join('angular_sources', module);
   const angular = spawn(NG, ['serve'], SPAWNARG);
+  delete SPAWNARG.cwd;
   process.on('SIGINT', () => {
     console.log(`\n\n${R}${E}Killed${N}${N}:\n ${G}✔${N} ${E}ng serve${N} with pid: ${G}${angular.pid}${N} \n ${G}✔${N} ${E}spark serve${N} with pid: ${G}${codeigniter.pid}${N}`);
     angular.kill;
     codeigniter.kill;
   });
 }
-cd 
+
+const buildAngular = e => {
+  if (e == null) {
+    files = fs.readdirSync('angular_sources');
+    for (let file of files) {
+        console.log(`${G}${E}Building ${Y}${E}${file}${N}`);
+        SPAWNARG.cwd = path.join('angular_sources', file)
+        spawnSync(NG, ['build'], SPAWNARG);
+    }
+  } else {
+    console.log(`${G}${E}Building ${Y}${E}${MAINMODULE}${N}`);
+    SPAWNARG.cwd = path.join('angular_sources', e)
+    spawnSync(NG, ['build'], SPAWNARG);
+  }
+  copyFolderRecursiveSync('amodules', 'public');
+  delete SPAWNARG.cwd
+}
+
 const buildForApache = e => {
+  buildAngular(e);
   fs.rmSync('build', { recursive: true, force: true });
   copyInsideSourceRecursiveSync('public', 'build');
   fs.mkdirSync(path.join('build', 'backend'));
   copyFolderRecursiveSync('aop_modules', path.join('build', 'backend'));
   copyFolderRecursiveSync('app', path.join('build', 'backend'));
-  copyFolderRecursiveSync(path.join('vendor','codeigniter4','framework','writable'), path.join('build', 'backend'));
+  copyFolderRecursiveSync(path.join('vendor', 'codeigniter4', 'framework', 'writable'), path.join('build', 'backend'));
   copyFileSync('env_production', path.join('build', 'backend', '.env'));
   copyFileSync('composer.json', path.join('build', 'backend'));
   copyFileSync(path.join('app', '.htaccess'), path.join('build', 'backend'));
@@ -333,12 +353,13 @@ const buildForApache = e => {
 }
 
 const buildForOthers = e => {
+  buildAngular(e);
   fs.rmSync('build', { recursive: true, force: true });
   fs.mkdirSync('build');
   copyFolderRecursiveSync('public', 'build');
   copyFolderRecursiveSync('aop_modules', path.join('build'));
   copyFolderRecursiveSync('app', path.join('build'));
-  copyFolderRecursiveSync(copyFolderRecursiveSync(path.join('vendor','codeigniter4','framework','writable')), path.join('build'));
+  copyFolderRecursiveSync(copyFolderRecursiveSync(path.join('vendor', 'codeigniter4', 'framework', 'writable')), path.join('build'));
   copyFileSync('env_production', path.join('build', '.env'));
   copyFileSync('composer.json', path.join('build'));
   copyFileSync('.htaccess', path.join('build'));
@@ -365,14 +386,13 @@ const copyBuild = () => {
         let fistup = ['aop_modules', 'versions', 'firstup.info.txt'];
         if (fs.existsSync(path.join(params.copy, 'backend', ...fistup))) {
           fs.rmSync(path.join(params.copy, 'backend', ...fistup));
-        } 
+        }
         if (fs.existsSync(path.join(params.copy, ...fistup))) {
           fs.rmSync(path.join(params.copy, ...fistup));
-        }  
+        }
     }
   }
 }
-
 
 const installAOP = e => {
   if (!fs.existsSync('.env')) copyFileSync('env_develop', '.env');
@@ -402,26 +422,63 @@ const installAOP = e => {
   }
 }
 
+const createNewModule = module => {
+  let dest = path.join('angular_sources', module);
+  if (fs.existsSync(dest)) {
+    console.log(`The module already exists! I can't overwrite it!`);
+    return;
+  }
+  SPAWNARG.cwd = 'angular_sources';
+  spawnSync(NG, ['new', module, '--routing', '--style', 'scss'], SPAWNARG);
+  delete SPAWNARG.cwd;
+  convertToModule(module);
+}
+
+const convertToModule = module => {
+  let file = path.join('angular_sources', module, 'angular.json');
+  if (!fs.existsSync(file)) {
+    console.log(`The module doesn't exists!`);
+    return;
+  }
+  const data = JSON.parse(fs.readFileSync(file));
+  let dst = '../../amodules/'+module;
+  if(!data.projects.hasOwnProperty(module)){
+    console.log(`Unable to convert project to AOP, manually set architect.build.options.outputPath to ${dst}!`);
+    return;
+  }
+  data.projects[module].architect.build.options.outputPath = dst;
+  fs.writeFileSync(file, JSON.stringify(data, null, 4));
+}
 
 const menu = () => {
+  let module = (myArgs[1]) ? myArgs[1] : MAINMODULE;
+  module = (fs.existsSync(path.join('angular_sources', module))) ? module : MAINMODULE;
   parseArguments(myArgs);
   switch (params.command) {
     case 'serve':
-      serve();
+      buildAngular(null);
+      serve(module);
       break;
     case 'spark':
       spawn(PHP, myArgs, SPAWNARG);
       break;
     case 'ng':
-      spawn(NG, myArgs, SPAWNARG);
+      SPAWNARG.cwd = path.join('angular_sources', aop)
+      spawn(NG, myArgs.splice(2), SPAWNARG);
       break;
     case 'build':
-      spawnSync(NG, ['build'], SPAWNARG);
-      buildForApache();
+      module = (myArgs[1]) ? module : null;
+      buildForApache(module);
       break;
     case 'build:others':
-      spawnSync(NG, ['build'], SPAWNARG);
-      buildForOthers();
+      module = (myArgs[1]) ? module : null;
+      buildForOthers(module);
+      break;
+    case 'ma':
+      if (myArgs[1] !== undefined) createNewModule(myArgs[1]);
+      break;
+    case 'mc':
+      if (myArgs[1] !== undefined) convertToModule(myArgs[1]);
       break;
     case 'install':
       installAOP();
@@ -438,6 +495,7 @@ const menu = () => {
     default:
       usage();
   }
+  process.exit(0);
 }
 
 let filePath = path.join(process.cwd(), 'aop');

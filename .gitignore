@@ -171,3 +171,6 @@ build
 /composer.lock
 /package-lock.json
 writable/database.db
+*.angular
+/amodules
+!amodules/.gitkeep

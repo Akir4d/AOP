@@ -1,0 +1,25 @@
+{
+  "name": "@akir4d/angular-on-php",
+  "version": "0.3.0",
+  "description": "Angular on PHP",
+  "main": "aop",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Akir4d/angular_on_php.git"
+  },
+  "author": "Paolo Rampino",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Akir4d/angular_on_php/issues"
+  },
+  "homepage": "https://github.com/Akir4d/angular_on_php#readme",
+  "dependencies": {
+    "basic-ftp": "^5.0.2"
+  }
+}
