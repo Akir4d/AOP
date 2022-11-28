@@ -163,8 +163,7 @@ cache/*
 Thumbs.db
 
 # AOP specific
-/aop_modules/versions
-!aop_modules/versions/composer.php
+aopm/versions/*.txt
 
 build
 /app/Views/AopAutogen
@@ -172,5 +171,3 @@ build
 /package-lock.json
 writable/database.db
 *.angular
-/amodules
-!amodules/.gitkeep

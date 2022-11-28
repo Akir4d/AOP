@@ -24,7 +24,7 @@ if (!extension_loaded('gd')) {
 }
 
 $composerPath = realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR);
-$updateDir = realpath($composerPath . DIRECTORY_SEPARATOR . 'aop_modules' . DIRECTORY_SEPARATOR . 'versions');
+$updateDir = realpath($composerPath . DIRECTORY_SEPARATOR . 'aopm' . DIRECTORY_SEPARATOR . 'versions');
 $updateFile = $updateDir . DIRECTORY_SEPARATOR . 'firstup.info.txt';
 
 if (!file_exists($composerPath . DIRECTORY_SEPARATOR . 'vendor') || !file_exists($updateFile)) {
@@ -93,19 +93,19 @@ if (!file_exists($composerPath . DIRECTORY_SEPARATOR . 'vendor') || !file_exists
     if($success) file_put_contents($updateFile, "done", FILE_APPEND);
     $spark = preg_replace(
         '/\<\?php/',
-        '<?php' . PHP_EOL . 'include realpath("aop_modules/update.php");',
+        '<?php' . PHP_EOL . 'include realpath("aopm/update.php");',
         file_get_contents(realpath($composerPath . '/vendor/codeigniter4/framework/spark')),
         1
     );
 
     $index = preg_replace(
         '/\<\?php/',
-        '<?php' . PHP_EOL . 'include realpath("../aop_modules/update.php");',
+        '<?php' . PHP_EOL . 'include realpath("../aopm/update.php");',
         file_get_contents(realpath($composerPath . '/vendor/codeigniter4/framework/public/index.php')),
         1
     );
 
-    file_put_contents($composerPath . '/aop_modules/index.php', $index);
+    file_put_contents($composerPath . '/aopm/index.php', $index);
     if (!file_exists($composerPath . '/../backend')) {
         file_put_contents($composerPath . '/public/index.php', $index);
     } else {

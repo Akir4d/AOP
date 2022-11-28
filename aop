@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-const version = 0.22;
-const { exec, spawn, spawnSync } = require("child_process");
+const version = 0.23;
+const { exec, spawn, spawnSync, execSync } = require("child_process");
 const console = require("console");
 const { Console } = require("console");
 const fs = require('fs');
@@ -20,6 +20,7 @@ const N = '\x1b[0m';
 var NG = '';
 var PHP = '';
 var NPM = '';
+var NPX = '';
 var ftpPort = 21;
 var ftpSecure = false;
 var forceClean = false;
@@ -92,7 +93,7 @@ class FTPClient {
         if (fs.existsSync(path.join(sourcePath, 'backend'))) {
           await this.client.cd('backend');
         }
-        await this.client.cd('aop_modules');
+        await this.client.cd('aopm');
         await this.client.cd('versions');
         await this.removeByExtension('txt');
       } catch (err) {
@@ -280,7 +281,8 @@ const check = f => {
       console.log(`${R}${E}error:${N}${E} unable to find npm executable${N}`);
       return;
     } else {
-      NPM = stdout.split("\n")[0].trim().replace(/ /g,'" "');
+      NPM = stdout.split("\n")[0].trim().replace(/ /g, '" "');
+      NPX = execSync(WHICH + ' npx').toString();
       if (!fs.existsSync('node_modules')) {
         spawnSync(NPM, ['install'], SPAWNARG);
       }
@@ -289,15 +291,15 @@ const check = f => {
           console.log(`${R}${E}error:${N}${E} unable to find php executable${N}`);
           return;
         } else {
-          PHP = stdout.split("\n")[0].trim().replace(/ /g,'" "');
+          PHP = stdout.split("\n")[0].trim().replace(/ /g, '" "');
           exec(WHICH + ' ng', (error, stdout) => {
             if (error) {
               console.log(`${G}${E}Installing missed ng command:${N}`);
-              npmprecess = spawn(NPM, ['install', '-g', '@angular/cli'], SPAWNARG);
+              npmprecess = spawn(NPM, ['install', '-g', '@angular/cli@14'], SPAWNARG);
               npmprecess.on('exit', () => check(f));
               return;
             } else {
-              NG = stdout.split("\n")[0].trim().replace(/ /g,'" "');
+              NG = stdout.split("\n")[0].trim().replace(/ /g, '" "');
               f();
             }
           });
@@ -310,7 +312,7 @@ const check = f => {
 const serve = (module) => {
   if (!fs.existsSync('.env')) copyFileSync('env_develop', '.env');
   const codeigniter = spawn(PHP, ['spark', 'serve', '--port', 8085], SPAWNARG);
-  SPAWNARG.cwd = path.join('angular_sources', module);
+  SPAWNARG.cwd = path.join('asrc', module);
   const angular = spawn(NG, ['serve'], SPAWNARG);
   delete SPAWNARG.cwd;
   process.on('SIGINT', () => {
@@ -322,20 +324,19 @@ const serve = (module) => {
 
 const buildAngular = e => {
   if (e == null) {
-    files = fs.readdirSync('angular_sources');
+    files = fs.readdirSync('asrc');
     for (let file of files) {
-        console.log(`${G}${E}Building ${Y}${E}${file}${N}`);
-        convertToModule(file);
-        SPAWNARG.cwd = path.join('angular_sources', file);
-      if (!fs.existsSync(path.join(SPAWNARG.cwd,'node_modules'))) spawnSync(NPM, ['install'], SPAWNARG);
-        spawnSync(NG, ['build'], SPAWNARG);
+      console.log(`${G}${E}Building ${Y}${E}${file}${N}`);
+      convertToModule(file);
+      SPAWNARG.cwd = path.join('asrc', file);
+      if (!fs.existsSync(path.join(SPAWNARG.cwd, 'node_modules'))) spawnSync(NPM, ['install'], SPAWNARG);
+      spawnSync(NG, ['build'], SPAWNARG);
     }
   } else {
     console.log(`${G}${E}Building ${Y}${E}${MAINMODULE}${N}`);
-    SPAWNARG.cwd = path.join('angular_sources', e)
+    SPAWNARG.cwd = path.join('asrc', e)
     spawnSync(NG, ['build'], SPAWNARG);
   }
-  copyFolderRecursiveSync('amodules', 'public');
   delete SPAWNARG.cwd
 }
 
@@ -346,7 +347,7 @@ const buildForApache = e => {
   console.log(`${Y}${E}Coping all php files inside build${N}`);
   copyInsideSourceRecursiveSync('public', 'build');
   fs.mkdirSync(path.join('build', 'backend'));
-  copyFolderRecursiveSync('aop_modules', path.join('build', 'backend'));
+  copyFolderRecursiveSync('aopm', path.join('build', 'backend'));
   copyFolderRecursiveSync('app', path.join('build', 'backend'));
   copyFolderRecursiveSync(path.join('vendor', 'codeigniter4', 'framework', 'writable'), path.join('build', 'backend'));
   copyFileSync('env_production', path.join('build', 'backend', '.env'));
@@ -364,7 +365,7 @@ const buildForOthers = e => {
   fs.mkdirSync('build');
   console.log(`${Y}${E}Coping all php files inside build${N}`);
   copyFolderRecursiveSync('public', 'build');
-  copyFolderRecursiveSync('aop_modules', path.join('build'));
+  copyFolderRecursiveSync('aopm', path.join('build'));
   copyFolderRecursiveSync('app', path.join('build'));
   copyFolderRecursiveSync(copyFolderRecursiveSync(path.join('vendor', 'codeigniter4', 'framework', 'writable')), path.join('build'));
   copyFileSync('env_production', path.join('build', '.env'));
@@ -390,7 +391,7 @@ const copyBuild = () => {
         break;
       default:
         copyInsideSourceRecursiveSync('build', params.copy, true);
-        let fistup = ['aop_modules', 'versions', 'firstup.info.txt'];
+        let fistup = ['aopm', 'versions', 'firstup.info.txt'];
         if (fs.existsSync(path.join(params.copy, 'backend', ...fistup))) {
           fs.rmSync(path.join(params.copy, 'backend', ...fistup));
         }
@@ -430,50 +431,61 @@ const installAOP = e => {
 }
 
 const createNewModule = module => {
-  let dest = path.join('angular_sources', module);
+  let dest = path.join('asrc', module);
   if (fs.existsSync(dest)) {
     console.log(`The module already exists! I can't overwrite it!`);
     return;
   }
-  SPAWNARG.cwd = 'angular_sources';
-  spawnSync(NG, ['new', module, '--routing', '--style', 'scss'], SPAWNARG);
+  SPAWNARG.cwd = 'asrc';
+  spawnSync(NG, ['new', module, '--style', 'scss', '--routing', '--defaults'], SPAWNARG);
+
   delete SPAWNARG.cwd;
   convertToModule(module);
 }
 
 const convertToModule = module => {
-  let file = path.join('angular_sources', module, 'angular.json');
-  let filebk = path.join('angular_sources', module, 'angular-no-module.json');
+  let file = path.join('asrc', module, 'angular.json');
+  let filebk = path.join('asrc', module, 'angular-no-module.json');
   if (!fs.existsSync(file)) {
     console.log(`The module doesn't exists!`);
     return;
   }
   const data = JSON.parse(fs.readFileSync(file));
-  let dst = '../../amodules/'+module;
-  if(data.projects.hasOwnProperty(module) && data.projects[module].architect.build.options.outputPath == dst){
-    console.log(`Prject already converted!`);
+  let dst = '../../public/amodules/' + module;
+  let firstkey = Object.keys(data.projects)[0];
+  let project = data.hasOwnProperty('defaultProject') ? data.defaultProject : firstkey;
+  if (data.projects.hasOwnProperty(project) && data.projects[project].architect.build.options.outputPath == dst) {
+    console.log(`Project already converted!`);
     return;
   }
-  copyFileSync(file,filebk);
-  data.projects[data.defaultProject].architect.build.options.outputPath = dst;
+  copyFileSync(file, filebk);
+
+  data.projects[project].architect.build.options.outputPath = dst;
   fs.writeFileSync(file, JSON.stringify(data, null, 4));
 }
 
 const menu = () => {
   let module = (myArgs[1]) ? myArgs[1] : MAINMODULE;
-  module = (fs.existsSync(path.join('angular_sources', module))) ? module : MAINMODULE;
+  module = (fs.existsSync(path.join('asrc', module))) ? module : MAINMODULE;
   parseArguments(myArgs);
   switch (params.command) {
     case 'serve':
-      buildAngular(null);
       serve(module);
       break;
     case 'spark':
       spawn(PHP, myArgs, SPAWNARG);
       break;
     case 'ng':
-      SPAWNARG.cwd = path.join('angular_sources', aop)
+      SPAWNARG.cwd = path.join('asrc', module)
       spawn(NG, myArgs.splice(2), SPAWNARG);
+      break;
+    case 'npm':
+      SPAWNARG.cwd = path.join('asrc', module)
+      spawn(NPM, myArgs.splice(2), SPAWNARG);
+      break;
+    case 'npx':
+      SPAWNARG.cwd = path.join('asrc', module)
+      spawn(NPX, myArgs.splice(2), SPAWNARG);
       break;
     case 'build':
       module = (myArgs[1]) ? module : null;

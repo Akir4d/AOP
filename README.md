@@ -60,10 +60,10 @@ to use the command as eg: aop build
 
 | File | Description |
 |------------|-------------|
-| aop_modules/versions | required in order to make codeigniter auto-update works |
-| aop_modules/versions/composer.php | a Small composer init file |
-| aop_modules/header.php | just an header for update.php |
-| aop_modules/update.php | This script executes "Composer Update" straight from the browser during the initial http request to ensure that all framework dependencies and server prerequisites are met. It auto-disables itself after first execution, to re-enable it delete aop_modules/versions/*.txt|
+| aopm/versions | required in order to make codeigniter auto-update works |
+| aopm/versions/composer.php | a Small composer init file |
+| aopm/header.php | just an header for update.php |
+| aopm/update.php | This script executes "Composer Update" straight from the browser during the initial http request to ensure that all framework dependencies and server prerequisites are met. It auto-disables itself after first execution, to re-enable it delete aopm/versions/*.txt|
 | aop | Scripting tool that facilitates development using both framework|
 
 # Misc

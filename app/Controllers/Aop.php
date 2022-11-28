@@ -44,7 +44,7 @@ class Aop extends AopBaseController
             }
             return $this->renderJson(['status' => 'forbidden']);
         } else {
-            return $this->aopRender("emergency", "aop/emergency");
+            return $this->aopRender("emergency", "aop/emergency", ['api' => base_url("aop/emergency")]);
         }
     }
 }

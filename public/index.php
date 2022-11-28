@@ -1,5 +1,5 @@
 <?php
-include realpath("../aop_modules/update.php");
+include realpath("../aopm/update.php");
 
 // Check PHP version.
 $minPhpVersion = '7.4'; // If you update this, don't forget to update `spark`.
