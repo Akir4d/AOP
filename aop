@@ -324,6 +324,7 @@ const buildAngular = e => {
     files = fs.readdirSync('angular_sources');
     for (let file of files) {
         console.log(`${G}${E}Building ${Y}${E}${file}${N}`);
+        convertToModule(file);
         SPAWNARG.cwd = path.join('angular_sources', file)
         spawnSync(NG, ['build'], SPAWNARG);
     }
