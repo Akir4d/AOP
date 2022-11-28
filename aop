@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const version = 0.21;
+const version = 0.22;
 const { exec, spawn, spawnSync } = require("child_process");
 const console = require("console");
 const { Console } = require("console");
@@ -280,7 +280,7 @@ const check = f => {
       console.log(`${R}${E}error:${N}${E} unable to find npm executable${N}`);
       return;
     } else {
-      NPM = stdout.split("\n")[0].trim().replaceAll(' ', '" "');
+      NPM = stdout.split("\n")[0].trim().replace(/ /g,'" "');
       if (!fs.existsSync('node_modules')) {
         spawnSync(NPM, ['install'], SPAWNARG);
       }
@@ -289,7 +289,7 @@ const check = f => {
           console.log(`${R}${E}error:${N}${E} unable to find php executable${N}`);
           return;
         } else {
-          PHP = stdout.split("\n")[0].trim().replaceAll(' ', '" "');;
+          PHP = stdout.split("\n")[0].trim().replace(/ /g,'" "');
           exec(WHICH + ' ng', (error, stdout) => {
             if (error) {
               console.log(`${G}${E}Installing missed ng command:${N}`);
@@ -297,7 +297,7 @@ const check = f => {
               npmprecess.on('exit', () => check(f));
               return;
             } else {
-              NG = stdout.split("\n")[0].trim().replaceAll(' ', '" "');;
+              NG = stdout.split("\n")[0].trim().replace(/ /g,'" "');
               f();
             }
           });
@@ -326,7 +326,8 @@ const buildAngular = e => {
     for (let file of files) {
         console.log(`${G}${E}Building ${Y}${E}${file}${N}`);
         convertToModule(file);
-        SPAWNARG.cwd = path.join('angular_sources', file)
+        SPAWNARG.cwd = path.join('angular_sources', file);
+      if (!fs.existsSync(path.join(SPAWNARG.cwd,'node_modules'))) spawnSync(NPM, ['install'], SPAWNARG);
         spawnSync(NG, ['build'], SPAWNARG);
     }
   } else {
@@ -351,7 +352,7 @@ const buildForApache = e => {
   copyFileSync('env_production', path.join('build', 'backend', '.env'));
   copyFileSync('composer.json', path.join('build', 'backend'));
   copyFileSync(path.join('app', '.htaccess'), path.join('build', 'backend'));
-  fs.writeFileSync(path.join('build', 'index.php'), fs.readFileSync(path.join('build', 'index.php'), 'utf-8').replaceAll('../', 'backend/'));
+  fs.writeFileSync(path.join('build', 'index.php'), fs.readFileSync(path.join('build', 'index.php'), 'utf-8').replace(/\.\.\//, 'backend/'));
   fs.mkdirSync(path.join('build', 'backend', 'cache'));
   copyBuild();
 }
@@ -442,17 +443,19 @@ const createNewModule = module => {
 
 const convertToModule = module => {
   let file = path.join('angular_sources', module, 'angular.json');
+  let filebk = path.join('angular_sources', module, 'angular-no-module.json');
   if (!fs.existsSync(file)) {
     console.log(`The module doesn't exists!`);
     return;
   }
   const data = JSON.parse(fs.readFileSync(file));
   let dst = '../../amodules/'+module;
-  if(!data.projects.hasOwnProperty(module)){
-    console.log(`Unable to convert project to AOP, manually set architect.build.options.outputPath to ${dst}!`);
+  if(data.projects.hasOwnProperty(module) && data.projects[module].architect.build.options.outputPath == dst){
+    console.log(`Prject already converted!`);
     return;
   }
-  data.projects[module].architect.build.options.outputPath = dst;
+  copyFileSync(file,filebk);
+  data.projects[data.defaultProject].architect.build.options.outputPath = dst;
   fs.writeFileSync(file, JSON.stringify(data, null, 4));
 }
 
@@ -501,7 +504,6 @@ const menu = () => {
     default:
       usage();
   }
-  process.exit(0);
 }
 
 let filePath = path.join(process.cwd(), 'aop');
