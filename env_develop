@@ -57,6 +57,7 @@ database.default.DBDebug = true
 database.default.charset  = 'utf8'
 database.default.DBCollat = 'utf8_general_ci'
 
+
 # database.default.port = 3306
 
 # database.tests.hostname = localhost
