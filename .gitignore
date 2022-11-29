@@ -164,7 +164,7 @@ Thumbs.db
 
 # AOP specific
 aopm/versions/*.txt
-
+/asset_modules
 build
 /app/Views/AopAutogen
 /composer.lock

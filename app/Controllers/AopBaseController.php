@@ -30,18 +30,18 @@ abstract class AopBaseController extends BaseController
     protected function addStyles($value)
     {
         $uniq = md5($value);
-        $styles[$uniq] = $value;
+        $this->styles[$uniq] = $value;
     }
 
     /**
      * Adds Header and Footer stuff!
      *
-     * @param [type] $value
+     * @param string $value
      * @param string $type
      * @param string $position
      * @return void
      */
-    protected function addHeadFooter($value, $type = "auto", $position="footer")
+    protected function addHeadFooter(string $value, string $type = "auto", string $position="footer")
     {
         $uniq = md5($value);
         switch($type){
@@ -95,12 +95,12 @@ abstract class AopBaseController extends BaseController
     /**
      * Just a common function aopRender and aopModularize
      *
-     * @param [type] $module
-     * @param [type] $returnPath
+     * @param string $module
+     * @param string $returnPath
      * @param array $arguments
      * @return object
      */
-    private function aopPreRender($module, $returnPath, $arguments = []): object
+    private function aopPreRender(string $module,string $returnPath, array $arguments = []): object
     {
         $config = new \Config\Aop();
         $du = $config->develCi;
@@ -110,7 +110,9 @@ abstract class AopBaseController extends BaseController
         $args = "";
         if (!empty($arguments)) {
             foreach ($arguments as $k => $v) {
-                $args .= ' ' . $k . '="' . $v . '"';
+                $v=(!(is_string($v) || is_numeric($v)))?htmlspecialchars(json_encode($v)):$v;
+
+                $args .= is_numeric($v)?' data-' . $k . '=' . $v:' data-' . $k . '="' . $v . '"';
             }
         }
         (file_exists(($moudelPathAbsolute))) || mkdir($moudelPathAbsolute, 0755, true);
@@ -139,15 +141,15 @@ abstract class AopBaseController extends BaseController
     /**
      * aopRender renders an angular module in its entirety, with no additional CSS or JS injections.
      *
-     * @param [type] $module Name of module
-     * @param [type] $returnPath Controller path or routing, for example: api/users
+     * @param string $module Name of module
+     * @param string $returnPath Controller path or routing, for example: api/users
      * @param array  $arguments Array of arguments to pass to Angular. 
      *               All arguments can be accessed from within the Angular app using 
-     *               document.getElementsByTagName("base")[0]. getAttribute("name")
+     *               document.getElementsByTagName("base")[0].dataset["key"] or document.getElementsByTagName("base")[0].dataset?.key
      * 
      * @return string | \CodeIgniter\HTTP\RedirectResponse
      */
-    protected function aopRender($module, $returnPath, $arguments = []): string | \CodeIgniter\HTTP\RedirectResponse
+    protected function aopRender(string $module, string $returnPath, array $arguments = []): string | \CodeIgniter\HTTP\RedirectResponse
     {
         $pre = $this->aopPreRender($module, $returnPath, $arguments);
         if ($pre->type == 'redirect') {
@@ -160,14 +162,14 @@ abstract class AopBaseController extends BaseController
     /**
      * Make Angualer page integrable inside a Codeigniter page!
      *
-     * @param [type] $module Name of module
-     * @param [type] $returnPath Controller path or routing, for example: api/users
+     * @param string $module Name of module
+     * @param string $returnPath Controller path or routing, for example: api/users
      * @param array  $arguments Array of arguments to pass to Angular. 
      *               All arguments can be accessed from within the Angular app using 
      *               document.getElementsByTagName("base")[0]. getAttribute("name")
      * @return void
      */
-    protected function aopModularize($module, $returnPath, $arguments = [])
+    protected function aopModularize(string $module,string $returnPath, array $arguments = []): string | \CodeIgniter\HTTP\RedirectResponse
     {
         $pre = $this->aopPreRender($module, $returnPath, $arguments);
         if ($pre->type == 'redirect') {

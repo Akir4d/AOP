@@ -313,6 +313,7 @@ const serve = (module) => {
   if (!fs.existsSync('.env')) copyFileSync('env_develop', '.env');
   const codeigniter = spawn(PHP, ['spark', 'serve', '--port', 8085], SPAWNARG);
   SPAWNARG.cwd = path.join('asrc', module);
+  if (!fs.existsSync(path.join(SPAWNARG.cwd, 'node_modules'))) spawnSync(NPM, ['install'], SPAWNARG);
   const angular = spawn(NG, ['serve'], SPAWNARG);
   delete SPAWNARG.cwd;
   process.on('SIGINT', () => {
@@ -341,7 +342,7 @@ const buildAngular = e => {
 }
 
 const buildForApache = e => {
-  buildAngular(e);
+  buildAngular();
   console.log(`${Y}${E}Cleaning build folder...${N}`);
   fs.rmSync('build', { recursive: true, force: true });
   console.log(`${Y}${E}Coping all php files inside build${N}`);
@@ -464,9 +465,46 @@ const convertToModule = module => {
   fs.writeFileSync(file, JSON.stringify(data, null, 4));
 }
 
+const getRecursive = (pArray, recursive=true) => {
+  let arr = [];
+  let ph = path.join(...pArray);
+    
+  for (file of fs.readdirSync(ph)) {
+    let fss = path.join(ph, file);
+    if (!file.startsWith('.')) {
+      if (!fs.lstatSync(fss).isDirectory()) {
+        let un = [...pArray, file].join('/');
+        if (!arr.includes(un)) arr.push(un);
+      } else {
+        if(recursive) for (fl of getRecursive([...pArray, file])) arr.push(fl);
+      }
+    }
+  }
+  return arr;
+}
+
+const loadAssets = asset => {
+  if (asset == MAINMODULE) return console.log(`to get asset you have to provide a valid npm module, for example: admin-lte@^3.2`);
+  let assetImport = { packages: {} };
+  let mod = (asset.includes('@')) ? asset.split('@')[0] : asset;
+  if (fs.existsSync('assets.json')) assetImport = JSON.parse(fs.readFileSync('assets.json'));
+  let dest = path.join('asset_modules', mod);
+  if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true, force: true });
+  }
+  spawnSync(NPM, ['install', asset, '---prefix', dest], SPAWNARG);
+  assetImport.packages[mod] = JSON.parse(fs.readFileSync(path.join(dest, 'package.json')));
+  if (mod == '') return console.log(`you have to manually set what to import to asset`);
+  if (!assetImport.hasOwnProperty(mod)) assetImport[mod] = [];
+  for (let arr of getRecursive(['asset_modules', mod, 'node_modules', mod, 'dist'], false)) {
+    if (!assetImport[mod].includes(arr)) assetImport[mod].push(arr);
+  }
+  fs.writeFileSync('assets.json', JSON.stringify(assetImport, null, 4));
+}
+
 const menu = () => {
-  let module = (myArgs[1]) ? myArgs[1] : MAINMODULE;
-  module = (fs.existsSync(path.join('asrc', module))) ? module : MAINMODULE;
+  let arg = (myArgs[1]) ? myArgs[1] : MAINMODULE;
+  let module = (fs.existsSync(path.join('asrc', arg))) ? arg : MAINMODULE;
   parseArguments(myArgs);
   switch (params.command) {
     case 'serve':
@@ -488,25 +526,28 @@ const menu = () => {
       spawn(NPX, myArgs.splice(2), SPAWNARG);
       break;
     case 'build':
-      module = (myArgs[1]) ? module : null;
+      module = (arg) ? module : null;
       buildForApache(module);
       break;
     case 'build:others':
-      module = (myArgs[1]) ? module : null;
+      module = (arg) ? module : null;
       buildForOthers(module);
       break;
     case 'ma':
-      if (myArgs[1] !== undefined) createNewModule(myArgs[1]);
+      if (myArgs[1] !== undefined) createNewModule(arg);
       break;
     case 'mc':
-      if (myArgs[1] !== undefined) convertToModule(myArgs[1]);
+      if (myArgs[1] !== undefined) convertToModule(arg);
       break;
     case 'install':
       installAOP();
       break;
     case 'copy':
-      params.copy = myArgs[1];
+      params.copy = arg;
       copyBuild();
+      break;
+    case 'assets:load':
+      loadAssets(arg);
       break;
     case 'hash':
       process.stdout.write(`\n${E}The hash for ${G}${E}${myArgs[1]}${N}${E} is ${N}${Y}${E}`);
@@ -519,6 +560,7 @@ const menu = () => {
 }
 
 let filePath = path.join(process.cwd(), 'aop');
+
 if (fs.existsSync(filePath)) {
   const fileContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
   let pathVersion = parseFloat(fileContent.split('\n')[1].split('=')[1].split(';')[0].trim());

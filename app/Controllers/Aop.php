@@ -14,7 +14,7 @@ class Aop extends AopBaseController
 
     public function index()
     {
-        return $this->aopRender("main","/");
+        return $this->aopRender("main", "/", ['api' => base_url("aop/emergency"), 'oth' => ['io'=>1, 'tu'=>'2']]);
     }
 
     public function blank()
