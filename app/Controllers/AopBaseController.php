@@ -41,10 +41,10 @@ abstract class AopBaseController extends BaseController
      * @param string $position
      * @return void
      */
-    protected function addHeadFooter(string $value, string $type = "auto", string $position="footer")
+    protected function addHeadFooter(string $value, string $type = "auto", string $position = "footer")
     {
         $uniq = md5($value);
-        switch($type){
+        switch ($type) {
             case 'row':
                 $this->headFooter[$position]['row'][$uniq] = $value;
                 break;
@@ -62,7 +62,7 @@ abstract class AopBaseController extends BaseController
     protected function checkDb(): object
     {
         $migrate = null;
-        $status = (object)['message' => '', 'error' => false, 'debug' => ''];
+        $status = (object) ['message' => '', 'error' => false, 'debug' => ''];
         try {
             $migrate = \Config\Services::migrations();
         } catch (\Throwable $e) {
@@ -85,10 +85,11 @@ abstract class AopBaseController extends BaseController
     protected function renderJson(
         array $responseBody,
         int $code = ResponseInterface::HTTP_OK
-    ) {
+    )
+    {
         return $this
             ->response
-            ->setStatusCode($code)
+                ->setStatusCode($code)
             ->setJSON($responseBody);
     }
 
@@ -100,41 +101,36 @@ abstract class AopBaseController extends BaseController
      * @param array $arguments
      * @return object
      */
-    private function aopPreRender(string $module,string $returnPath, array $arguments = []): object
+    private function aopPreRender(string $module, string $returnPath, array $arguments = []): object
     {
         $config = new \Config\Aop();
         $du = $config->develCi;
         $file = FCPATH . "amodules/$module/index.html";
-        $modulePath = "Views/AopAutogen/AopModule";
-        $moudelPathAbsolute = APPPATH . $modulePath;
+        $moduleData = "";
         $args = "";
         if (!empty($arguments)) {
             foreach ($arguments as $k => $v) {
-                $v=(!(is_string($v) || is_numeric($v)))?htmlspecialchars(json_encode($v)):$v;
+                $v = (!(is_string($v) || is_numeric($v))) ? htmlspecialchars(json_encode($v)) : $v;
 
-                $args .= is_numeric($v)?' data-' . $k . '=' . $v:' data-' . $k . '="' . $v . '"';
+                $args .= is_numeric($v) ? ' data-' . $k . '=' . $v : ' data-' . $k . '="' . $v . '"';
             }
         }
-        (file_exists(($moudelPathAbsolute))) || mkdir($moudelPathAbsolute, 0755, true);
         if (substr(base_url(), 0, strlen($du)) == $du) {
             $du = $config->develAn;
             $file = $du . '/index.html';
-            file_put_contents("$moudelPathAbsolute/$module.php", preg_replace('/<base.*?>/m', '<base href="' . $du . '"' . $args . '/>', file_get_contents($file)));
+            $moduleData = preg_replace('/<base.*?>/m', '<base href="' . $du . '"' . $args . '/>', file_get_contents($file));
         } else {
-            if (file_exists($file)) {
-                $du = base_url($returnPath) . '/';
-                file_put_contents("$moudelPathAbsolute/$module.php", preg_replace('/<base.*?>/m', '<base href="' . $du . '"' . $args . '/>', file_get_contents($file)));
-                if (strpos($du, 'localhost') === false) unlink($file);
-            }
+            $du = base_url($returnPath) . '/';
+            $moduleData = preg_replace('/<base.*?>/m', '<base href="' . $du . '"' . $args . '/>', file_get_contents($file));
         }
-        $seg =  str_replace(base_url($returnPath), '', base_url($this->request->getPath()));
+        $seg = str_replace(base_url($returnPath), '', base_url($this->request->getPath()));
         $file = 'amodules/' . $module . $seg;
         //echo $file;
         //die();
         if (is_file(FCPATH . $file)) {
-            return (object)['type' => 'redirect', 'file' => $file];
+            return (object) ['type' => 'redirect', 'file' => $file];
         } else {
-            return (object)['type' => 'module', 'file' => "$modulePath/$module"];
+            return (object) ['type' => 'module', 'data' => $moduleData];
         }
     }
 
@@ -149,20 +145,21 @@ abstract class AopBaseController extends BaseController
      * 
      * @return string | \CodeIgniter\HTTP\RedirectResponse
      */
-    protected function aopRender(string $module, string $returnPath, array $arguments = []): string | \CodeIgniter\HTTP\RedirectResponse
+    protected function aopRender(string $module, string $returnPath, array $arguments = []): string|\CodeIgniter\HTTP\RedirectResponse
     {
         $pre = $this->aopPreRender($module, $returnPath, $arguments);
         if ($pre->type == 'redirect') {
             return redirect()->to(base_url($pre->file));
         } else {
-            return view($pre->file);
+            return $pre->data;
         }
     }
 
     /**
      * allow cors, use with prodency
      */
-    public function cors(){
+    public function cors()
+    {
         header("Access-Control-Max-Age: 3600");
         header("Access-Control-Allow-Methods: POST, PUT, DELETE, UPDATE");
         header("Access-Control-Allow-Origin: * ");
@@ -180,13 +177,13 @@ abstract class AopBaseController extends BaseController
      *               document.getElementsByTagName("base")[0]. getAttribute("name")
      * @return void
      */
-    protected function aopModularize(string $module,string $returnPath, array $arguments = []): string | \CodeIgniter\HTTP\RedirectResponse
+    protected function aopModularize(string $module, string $returnPath, array $arguments = []): string|\CodeIgniter\HTTP\RedirectResponse
     {
         $pre = $this->aopPreRender($module, $returnPath, $arguments);
         if ($pre->type == 'redirect') {
             return redirect()->to(base_url($pre->file));
         } else {
-            $file = file_get_contents(APPPATH . $pre->file . '.php');
+            $file = $pre->data;
             $matches = [];
             preg_match('/<body.*?>(.*?)<\/body>/s', $file, $matches);
             // Print the entire match result
@@ -195,7 +192,6 @@ abstract class AopBaseController extends BaseController
             preg_match('/<head.*?>(.*?)<\/head>/s', $file, $matches);
             // Print the entire match result
             $head = $matches[1];
-
             // Destructure Angular header
             $doc = new \DOMDocument();
             $doc->loadHTML('<html><head>' . $head . '</head></html>');
@@ -205,7 +201,8 @@ abstract class AopBaseController extends BaseController
             }
             foreach ($doc->getElementsByTagName('link') as $node) {
                 $val = $doc->saveXML($node);
-                if (strpos($val, 'rel="icon"') == false) echo $val . PHP_EOL;
+                if (strpos($val, 'rel="icon"') == false)
+                    echo $val . PHP_EOL;
                 $this->addHeadFooter($val, 'row', 'head');
             }
             foreach ($doc->getElementsByTagName('script') as $node) {
@@ -220,7 +217,7 @@ abstract class AopBaseController extends BaseController
                 $val = $doc->saveXML($node);
                 $this->addHeadFooter($val, 'row', 'head');
             }
-            
+
             // Return Body content
             return $body;
         }
