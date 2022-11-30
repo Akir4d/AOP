@@ -119,11 +119,11 @@ abstract class AopBaseController extends BaseController
         if (substr(base_url(), 0, strlen($du)) == $du) {
             $du = $config->develAn;
             $file = $du . '/index.html';
-            file_put_contents("$moudelPathAbsolute/$module.php", preg_replace('/<base.*?>/m', '<base href="' . $du . '"' . $args . '>', file_get_contents($file)));
+            file_put_contents("$moudelPathAbsolute/$module.php", preg_replace('/<base.*?>/m', '<base href="' . $du . '"' . $args . '/>', file_get_contents($file)));
         } else {
             if (file_exists($file)) {
                 $du = base_url($returnPath) . '/';
-                file_put_contents("$moudelPathAbsolute/$module.php", preg_replace('/<base.*?>/m', '<base href="' . $du . '"' . $args . '>', file_get_contents($file)));
+                file_put_contents("$moudelPathAbsolute/$module.php", preg_replace('/<base.*?>/m', '<base href="' . $du . '"' . $args . '/>', file_get_contents($file)));
                 if (strpos($du, 'localhost') === false) unlink($file);
             }
         }
@@ -157,6 +157,17 @@ abstract class AopBaseController extends BaseController
         } else {
             return view($pre->file);
         }
+    }
+
+    /**
+     * allow cors, use with prodency
+     */
+    public function cors(){
+        header("Access-Control-Max-Age: 3600");
+        header("Access-Control-Allow-Methods: POST, PUT, DELETE, UPDATE");
+        header("Access-Control-Allow-Origin: * ");
+        header("Content-Type: application/json; charset=UTF-8");
+        header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
     }
 
     /**

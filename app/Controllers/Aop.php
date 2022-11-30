@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use \Ramsey\Uuid\Uuid;
-
+use \CodeIgniter\HTTP\ResponseInterface;
 class Aop extends AopBaseController
 {
     public function __construct()
@@ -17,34 +17,39 @@ class Aop extends AopBaseController
         return $this->aopRender("main", "/", ['api' => base_url("aop/emergency"), 'oth' => ['io'=>1, 'tu'=>'2']]);
     }
 
-    public function blank()
-    {
 
-        $userModel = new \App\Models\Api\Users();
-        //$userModel->save(['email'=>'liadserv@gmail.com', 'first_name'=>'Paolo', 'last_name' =>'Rampino', 'password' => '1234']);
-        var_dump($userModel->findAll());
-        return 'pippo';
-    }
+
 
     public function emergency()
     {
+            return $this->aopRender("emergency", "aop/emergency", ['api' => base_url("aop")]);
+    }
+
+    public function emergencyLogin(){
         $session = \Config\Services::session();
         if ($session->uuid == null) $session->uuid = Uuid::uuid4()->toString();
         $aop = new \Config\Aop();
+        $this->cors();
         if ($json = $this->request->getJSON()) {
             $keys = array_keys((array)$json);
             foreach ($keys as $key) {
                 switch ($key) {
-                    case 'login':
-                        if (password_verify($json->login->user, $aop->emergency['username']) && password_verify($json->login->pass, $aop->emergency['password'])) {
-                            return $this->renderJson(['uuid' => $session->uuid]);
+                    case 'username':
+                        if (password_verify($json->username, $aop->emergency['username']) && password_verify($json->password, $aop->emergency['password'])) {
+                            return $this->renderJson([
+                                'id'=> 1, 
+                                'username' => $json->username, 
+                                'password' => '********', 
+                                'firstName' => 'Emergency', 
+                                'lastName' => 'User',
+                                'token' => $session->uuid]);
                         }
                         break;
                 }
             }
-            return $this->renderJson(['status' => 'forbidden']);
-        } else {
-            return $this->aopRender("emergency", "aop/emergency", ['api' => base_url("aop/emergency")]);
+            return $this->renderJson(['status' => 'forbidden'], ResponseInterface::HTTP_UNAUTHORIZED);
         }
     }
 }
+
+
