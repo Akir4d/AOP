@@ -17,6 +17,8 @@ use CodeIgniter\HTTP\ResponseInterface;
 abstract class AopBaseController extends BaseController
 {
 
+
+    
     protected $styles = [];
     protected $headFooter = ['head' => ['row' => [], 'auto' => []], 'footer' => ['row' => [], 'auto' => []]];
 

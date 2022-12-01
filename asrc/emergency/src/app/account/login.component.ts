@@ -46,7 +46,7 @@ export class LoginComponent implements OnInit {
             .subscribe({
                 next: () => {
                     // get return url from query parameters or default to home page
-                    const returnUrl = `${document.getElementsByTagName("base")[0].dataset?.api}/emergency`;
+                    const returnUrl = `${document.getElementsByTagName("base")[0].href}`;
                     this.router.navigateByUrl(returnUrl);
                 },
                 error: error => {
