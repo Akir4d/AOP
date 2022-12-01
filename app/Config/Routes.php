@@ -62,3 +62,9 @@ $routes->get('/', 'Aop::index');
 if (is_file(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
     require APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php';
 }
+
+if (is_file(APPPATH . 'Config/Emergency/Routes.php')) {
+    require APPPATH . 'Config/Emergency/Routes.php';
+}
+
+

@@ -2,11 +2,11 @@
 
 namespace App\Controllers\Emergency;
 
-use App\Controllers\AopBaseController;
+use App\Controllers\Emergency\BaseController;
 use \CodeIgniter\HTTP\ResponseInterface;
 use \Ramsey\Uuid\Uuid;
 
-class Login extends AopBaseController
+class Login extends BaseController
 {
 
     public function index()

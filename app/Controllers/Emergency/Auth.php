@@ -2,13 +2,12 @@
 
 namespace App\Controllers\Emergency;
 
-use App\Controllers\AopBaseController;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use \Ramsey\Uuid\Uuid;
 
-abstract class Auth extends AopBaseController
+abstract class Auth extends BaseController
 {
 
     /**
@@ -20,11 +19,11 @@ abstract class Auth extends AopBaseController
         parent::initController($request, $response, $logger);
         // Preload any models, libraries, etc, here.
         // E.g.: $this->session = \Config\Services::session();
-        $this->authBarrer();
+        $this->authBearer();
 
     }
 
-    private function authBarrer()
+    private function authBearer()
     {
         $test = explode(' ', $this->request->getServer("HTTP_AUTHORIZATION"));
         $uuid = "";
