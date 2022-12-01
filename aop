@@ -259,16 +259,22 @@ const copyInsideSourceRecursiveSync = (source, target, show = false) => {
 
 const usage = u => {
   console.log(`\n${R}${E}usage${N}: node aop [Command] [ARG]\n\nCommands:
-    ${G}${E}serve${N}\t- starts ${E}Angular${N} and ${E}Codeigniter${N} develop serve at ${Y}${E}http://localhost:4200${N} and ${Y}${E}http://localhost:8085${N}
-    ${G}${E}spark${N}\t- starts ${E}Codeigniter${N} spark utility
-    ${G}${E}ng${N}   \t- calls  ${E}Angular${N} ng utility
-    ${G}${E}build${N}\t- builds a complete plug and play package on ${Y}${E}build/${N} folder
-    ${G}${E}build:others${N}- for all servers that do not support ".htaccess" this produces a complete plug-and-play package \n\t \t  on the build folder, for security reasons, "public" is the only sub-folder you have to share.
-    ${G}${E}copy${N}\t- copy your build to a folder or remote ftp server with syntax ${Y}${E}ftp://user:pass@host[:path]${N}
+    ${G}${E}serve${N} \t- starts ${E}Angular${N} and ${E}Codeigniter${N} develop serve at ${Y}${E}http://localhost:4200${N} and ${Y}${E}http://localhost:8085${N},\n\t \t  you can serve also a different module as comment for example: aop serve emergency\n
+    ${G}${E}spark${N} \t- starts ${E}Codeigniter${N} spark utility\n
+    ${G}${E}ng${N}    \t- calls ${E}Angular${N} ng utility, you can start also use it to a different module for example: aop ng emergency ...args
+    ${G}${E}npm${N}    \t- calls ${E}Angular${N} npm utility, you can start also use it to a different module for example: aop npm emergency ...args
+    ${G}${E}npx${N}    \t- calls ${E}Angular${N} npx utility, you can start also use it to a different module for example: aop npx emergency ...args\n
+    ${G}${E}ma${N}    \t- make an ${E}Angular${N} module to load with utility aopRender inside controller
+    ${G}${E}mc${N}    \t- convert an existing ${E}Angular${N} project inside asrc to module to load with utility aopRender inside controller\n
+    ${G}${E}build${N} \t- builds a complete plug and play package on ${Y}${E}build/${N} folder, you can build also 1 module instead all them, for example: aop build emergency
+    ${G}${E}build:oth${N}\t- for all servers that do not support ".htaccess" this produces a complete plug-and-play package \n\t \t  on the build folder, for security reasons, "public" is the only sub-folder you have to share,\n\t \t  you can build also 1 module instead all them, for example: aop build emergency\n
+    ${G}${E}copy${N}\t- copy your build to a folder or remote ftp server with syntax ${Y}${E}ftp://user:pass@host[:path]${N}\n
     ${G}${E}install${N}\t- installs aop on system
     \n\nOptions:
-    ${G}${E}-c${N} path or ${G}${E}--copy=path${N}\t after build command will copy the build to a folder or remote ftp server with syntax ${Y}${E}ftp://user:pass@host[:path]${N}
-    ${G}${E}-p${N} port or ${G}${E}--port=port${N}\t change the default ftp port.\n\nversion: ${version}
+    ${G}${E}-c\t${N} path\t\tor ${G}${E}--copy=path${N}\t\tafter build command will copy the build to a folder or remote ftp server with syntax ${Y}${E}ftp://user:pass@host[:path]${N}
+    ${G}${E}-fp\t${N} port\t\tor ${G}${E}--ftp-port=port${N}\tchange the default ftp port.
+    ${G}${E}-u\t${N} username\tor ${G}${E}--username=username${N}\tftp username.
+    ${G}${E}-p\t${N} password\tor ${G}${E}--password=password${N}\tftp password.\n\nversion: ${version}
   `);
   process.exit(0)
 }
@@ -555,7 +561,7 @@ const menu = () => {
       module = (arg == 'all') ? arg : module;
       buildForApache(module);
       break;
-    case 'build:others':
+    case 'build:oth':
       module = (arg == 'all') ? arg : module;
       buildForOthers(module);
       break;

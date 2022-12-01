@@ -1,6 +1,6 @@
 # Angular On PHP (AOP)
 
-This is a comprehensive template for developing an application using Angular and CodeIgniter 4.2.
+This is a comprehensive modular template for developing an application using Angular and CodeIgniter 4.2.
 This template may be run on a standard LAMP (PHP 7.4 or highter) server without any special configuration; simply build and copy to the apache folder and enjoy. 
 
 ![](tests/autoupdate.png "Auto Update")
@@ -37,12 +37,26 @@ to use the command as eg: aop build
 
 |command| Description |
 |-------|--------------------|
-|serve|starts Angular and Codeigniter develop serve at http://localhost:4200 and http://localhost:8085|
+|serve|starts Angular and Codeigniter develop serve at http://localhost:4200 and http://localhost:8085 you can serve also a different module as comment for example: aop serve emergency| 
 |spark|starts Codeigniter spark utility|
-|ng   | calls  Angular ng utility|
-|build|  builds a complete plug and play package on build/ folder
-|build:others|for all servers that do not support ".htaccess" this produces a complete plug-and-play package on the build folder, for security reasons, "public" is the only sub-folder you have to share|
+|ng   | calls  Angular ng utility, you can start also use it to a different module for example: aop ng emergency ...args|
+|npm  | calls  Angular ng utility, you can start also use it to a different module for example: aop npm emergency ...args|
+|npx  | calls  Angular ng utility, you can start also use it to a different module for example: aop npx emergency ...args|
+|ma  | make an Angular module to load with utility aopRender inside controller|
+|mc  | convert an existing Angular project inside asrc to module to load with utility aopRender inside controller|
+|build| builds a complete plug and play package on build/ folder, you can build also 1 module instead all them, for example: aop build emergency|
+|build:others|for all servers that do not support ".htaccess" this produces a complete plug-and-play package on the build folder, for security reasons, "public" is the only sub-folder you have to share, you can build also 1 module instead all them, for example: aop build emergency|
+|copy|copy your build to a folder or remote ftp server with syntax ftp://user:pass@host[ :path]|
 |install|will install aop as command|
+
+
+Options:
+|option| alternative | description |
+|-------|------------|-------------|
+ |-c path|--copy=path|after build command will copy the build to a folder or remote ftp server with syntax ftp://user:pass@host[ :path]|
+ |-fp port|--ftp-port=port|change the default ftp port.|
+ |-u username|--username=username|ftp username.|
+ |-p password|--password=password|ftp password.|
 
 # Human Develop Requirements 😉
 - basic Angular skills 
