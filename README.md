@@ -53,10 +53,10 @@ to use the command as eg: aop build
 Options:
 |option| alternative | description |
 |-------|------------|-------------|
- |-c path|--copy=path|after build command will copy the build to a folder or remote ftp server with syntax ftp://user:pass@host[ :path]|
- |-fp port|--ftp-port=port|change the default ftp port.|
- |-u username|--username=username|ftp username.|
- |-p password|--password=password|ftp password.|
+ |-c path| --copy=path  |after build command will copy the build to a folder or remote ftp server with syntax ftp://user:pass@host[ :path]|
+ |-fp port| --ftp-port=port |change the default ftp port.|
+ |-u username| --username=user |ftp username.|
+ |-p password| --password=pass |ftp password.|
 
 # Human Develop Requirements 😉
 - basic Angular skills 
