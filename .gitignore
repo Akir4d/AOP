@@ -163,11 +163,11 @@ cache/*
 Thumbs.db
 
 # AOP specific
-aopm/versions/*.txt
 /asset_modules
 build
 /app/Views/AopAutogen
 /composer.lock
 /package-lock.json
-writable/database.db
+writable/*.db
+writable/*.txt
 *.angular

@@ -18,7 +18,7 @@ class Aop extends BaseController
             if ($session->uuid !== $uuid) {
                 redirect()->to(base_url('emergency/aop/account/login'));
             }
-        }
+        } 
     }
 
     public function index()

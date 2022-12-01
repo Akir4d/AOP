@@ -1,8 +1,7 @@
 #!/usr/bin/env node
-const version = 0.23;
+const version = 0.27;
 const { exec, spawn, spawnSync, execSync } = require("child_process");
 const console = require("console");
-const { Console } = require("console");
 const fs = require('fs');
 const path = require('node:path');
 const myArgs = process.argv.slice(2);
@@ -28,7 +27,7 @@ var forceClean = false;
 
 class FTPClient {
   constructor(ftp, host = 'localhost', port = 21, username = 'anonymous', password = 'guest', secure = false) {
-    this.client = new ftp.Client();
+    this.client = new ftp.Client(0);
     this.settings = {
       host: host,
       port: port,
@@ -93,9 +92,8 @@ class FTPClient {
         if (fs.existsSync(path.join(sourcePath, 'backend'))) {
           await this.client.cd('backend');
         }
-        await this.client.cd('aopm');
-        await this.client.cd('versions');
-        await this.removeByExtension('txt');
+        await this.client.cd('writable');
+        await this.removeByExtension('info.txt');
       } catch (err) {
         console.log(err);
       }
@@ -174,7 +172,7 @@ const copyFileSync = (source, target) => {
 
 const ftpSync = (source, target) => {
   if (forceClean) {
-    const rl = readline.createInterface({
+    let rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout
     });
@@ -310,7 +308,7 @@ const check = f => {
 }
 
 const serve = (module) => {
-  if (!fs.existsSync('.env')) copyFileSync('env_develop', '.env');
+  if (!fs.existsSync('.env')) copyFileSync(path.join('envs', 'development.env'), '.env');
   const codeigniter = spawn(PHP, ['spark', 'serve', '--port', 8085], SPAWNARG);
   SPAWNARG.cwd = path.join('asrc', module);
   if (!fs.existsSync(path.join(SPAWNARG.cwd, 'node_modules'))) spawnSync(NPM, ['install'], SPAWNARG);
@@ -324,9 +322,11 @@ const serve = (module) => {
 }
 
 const buildAngular = e => {
-  if (e == null) {
+  if (!fs.existsSync('vendor')) spawnSync(PHP, [path.join('aopm', 'update.php')], SPAWNARG);
+  if (e == 'all') {
     files = fs.readdirSync('asrc');
     for (let file of files) {
+      if (file.startsWith('.')) continue;
       console.log(`${G}${E}Building ${Y}${E}${file}${N}`);
       convertToModule(file);
       SPAWNARG.cwd = path.join('asrc', file);
@@ -342,7 +342,7 @@ const buildAngular = e => {
 }
 
 const buildForApache = e => {
-  buildAngular();
+  buildAngular(e);
   console.log(`${Y}${E}Cleaning build folder...${N}`);
   fs.rmSync('build', { recursive: true, force: true });
   console.log(`${Y}${E}Coping all php files inside build${N}`);
@@ -351,10 +351,11 @@ const buildForApache = e => {
   copyFolderRecursiveSync('aopm', path.join('build', 'backend'));
   copyFolderRecursiveSync('app', path.join('build', 'backend'));
   copyFolderRecursiveSync(path.join('vendor', 'codeigniter4', 'framework', 'writable'), path.join('build', 'backend'));
-  copyFileSync('env_production', path.join('build', 'backend', '.env'));
+  copyFileSync(path.join('envs', 'production.env'), path.join('build', 'backend', '.env'));
   copyFileSync('composer.json', path.join('build', 'backend'));
   copyFileSync(path.join('app', '.htaccess'), path.join('build', 'backend'));
   fs.writeFileSync(path.join('build', 'index.php'), fs.readFileSync(path.join('build', 'index.php'), 'utf-8').replace(/\.\.\//, 'backend/'));
+  fs.writeFileSync(path.join('build', 'backend', 'spark'), fs.readFileSync('spark', 'utf-8').replace(/\.\.\//, 'backend/').replace('public', '..'));
   fs.mkdirSync(path.join('build', 'backend', 'cache'));
   copyBuild();
 }
@@ -369,7 +370,7 @@ const buildForOthers = e => {
   copyFolderRecursiveSync('aopm', path.join('build'));
   copyFolderRecursiveSync('app', path.join('build'));
   copyFolderRecursiveSync(copyFolderRecursiveSync(path.join('vendor', 'codeigniter4', 'framework', 'writable')), path.join('build'));
-  copyFileSync('env_production', path.join('build', '.env'));
+  copyFileSync(path.join('envs', 'production.env'), path.join('build', '.env'));
   copyFileSync('composer.json', path.join('build'));
   copyFileSync('.htaccess', path.join('build'));
   fs.mkdirSync(path.join('build', 'cache'));
@@ -377,6 +378,25 @@ const buildForOthers = e => {
 }
 
 const copyBuild = () => {
+  let rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  rl.question(`${Y}${E}Would yo like to pre-exec composer in build folder ${N}? [${G}${E}yes${N}]/${R}${E}no${N} `, ans => {
+    copyBuildReal((ans !== 'no')?'ok':'no');
+  });
+}
+
+const copyBuildReal = u => {
+  if(u == 'ok'){
+    let update = (fs.existsSync(path.join('build', 'backend'))) ? path.join('build', 'backend') : path.join('build');
+      delete SPAWNARG.cwd;
+      spawnSync(PHP, [path.join(update, 'aopm', 'update.php')], SPAWNARG);
+      fs.unlinkSync(path.join(update, 'writable', 'firstup.info.txt'));
+      fs.rmdirSync(path.join(update, 'cache'), { recursive: true, force: true});
+      fs.writeFileSync(path.join(update, 'writable', 'nocomposer.txt'), 'remove to reenable composer autoupdate');
+
+  }
   if (params.hasOwnProperty('copy')) {
     for (let rem of ['public', 'index.php', 'main.html', '.env', '.htaccess'])
       if (fs.existsSync(path.join(params.copy, rem)))
@@ -400,11 +420,14 @@ const copyBuild = () => {
           fs.rmSync(path.join(params.copy, ...fistup));
         }
     }
+  } else {
+    process.exit(0);
   }
+  
 }
 
 const installAOP = e => {
-  if (!fs.existsSync('.env')) copyFileSync('env_develop', '.env');
+  if (!fs.existsSync('.env')) copyFileSync(path.join('envs', 'development.env'), '.env');
   let nodePath = path.normalize(path.join(NG, '..'));
   copyFileSync('aop', nodePath, { overwrite: true | false });
   if (process.platform.startsWith('win')) {
@@ -465,10 +488,10 @@ const convertToModule = module => {
   fs.writeFileSync(file, JSON.stringify(data, null, 4));
 }
 
-const getRecursive = (pArray, recursive=true) => {
+const getRecursive = (pArray, recursive = true) => {
   let arr = [];
   let ph = path.join(...pArray);
-    
+
   for (file of fs.readdirSync(ph)) {
     let fss = path.join(ph, file);
     if (!file.startsWith('.')) {
@@ -476,7 +499,7 @@ const getRecursive = (pArray, recursive=true) => {
         let un = [...pArray, file].join('/');
         if (!arr.includes(un)) arr.push(un);
       } else {
-        if(recursive) for (fl of getRecursive([...pArray, file])) arr.push(fl);
+        if (recursive) for (fl of getRecursive([...pArray, file])) arr.push(fl);
       }
     }
   }
@@ -503,8 +526,8 @@ const loadAssets = asset => {
 }
 
 const menu = () => {
-  let arg = (myArgs[1]) ? myArgs[1] : MAINMODULE;
-  let module = (fs.existsSync(path.join('asrc', arg))) ? arg : MAINMODULE;
+  let arg = (myArgs[1]) ? myArgs[1] : 'all';
+  let module = (fs.existsSync(path.join('asrc', arg))) ? arg : 'all';
   parseArguments(myArgs);
   switch (params.command) {
     case 'serve':
@@ -514,23 +537,26 @@ const menu = () => {
       spawn(PHP, myArgs, SPAWNARG);
       break;
     case 'ng':
+      module = (module=='all')?MAINMODULE:module;
       SPAWNARG.cwd = path.join('asrc', module)
       spawn(NG, myArgs.splice(2), SPAWNARG);
       break;
     case 'npm':
+      module = (module=='all')?MAINMODULE:module;
       SPAWNARG.cwd = path.join('asrc', module)
       spawn(NPM, myArgs.splice(2), SPAWNARG);
       break;
     case 'npx':
+      module = (module=='all')?MAINMODULE:module;
       SPAWNARG.cwd = path.join('asrc', module)
       spawn(NPX, myArgs.splice(2), SPAWNARG);
       break;
     case 'build':
-      module = (arg) ? module : null;
+      module = (arg == 'all') ? arg : module;
       buildForApache(module);
       break;
     case 'build:others':
-      module = (arg) ? module : null;
+      module = (arg == 'all') ? arg : module;
       buildForOthers(module);
       break;
     case 'ma':
@@ -544,7 +570,7 @@ const menu = () => {
       break;
     case 'copy':
       params.copy = arg;
-      copyBuild();
+      copyBuildReal();
       break;
     case 'assets:load':
       loadAssets(arg);
@@ -561,11 +587,13 @@ const menu = () => {
 
 let filePath = path.join(process.cwd(), 'aop');
 
+
+
 if (fs.existsSync(filePath)) {
   const fileContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
   let pathVersion = parseFloat(fileContent.split('\n')[1].split('=')[1].split(';')[0].trim());
   if (pathVersion > version) {
-    const rl = readline.createInterface({
+    let rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout
     });
@@ -579,7 +607,6 @@ if (fs.existsSync(filePath)) {
       } else {
         myStart();
       }
-
     });
   } else {
     myStart();

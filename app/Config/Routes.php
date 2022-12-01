@@ -2,8 +2,6 @@
 
 namespace Config;
 
-use SebastianBergmann\Type\FalseType;
-
 // Create a new instance of our RouteCollection class.
 $routes = Services::routes();
 
@@ -32,7 +30,7 @@ $routes->set404Override('App\Controllers\Aop::index');
 // Set `$autoRoutesImproved` to true in `app/Config/Feature.php` and set the following to true.
 
 // AOP: This is set to true to make implementation easier.
-$routes->setAutoRoute(true);
+$routes->setAutoRoute(false);
 
 /*
  * --------------------------------------------------------------------
@@ -63,8 +61,6 @@ if (is_file(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
     require APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php';
 }
 
-if (is_file(APPPATH . 'Config/Emergency/Routes.php')) {
-    require APPPATH . 'Config/Emergency/Routes.php';
-}
 
+is_file(APPPATH . 'Config/Emergency/Routes.php') && require APPPATH . 'Config/Emergency/Routes.php';
 
