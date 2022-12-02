@@ -17,7 +17,6 @@ class Login extends BaseController
         }
 
         $aop = new \Config\Aop();
-        $this->cors();
         if ($json = $this->request->getJSON()) {
             $keys = array_keys((array) $json);
             foreach ($keys as $key) {
@@ -37,6 +36,10 @@ class Login extends BaseController
             }
             return $this->renderJson(['status' => 'forbidden'], ResponseInterface::HTTP_UNAUTHORIZED);
         }
+    }
+
+    public function test(){
+        echo '<pre>', var_dump($_SERVER), '</pre>';
     }
 
 }

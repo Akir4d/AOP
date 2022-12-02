@@ -30,7 +30,7 @@ $routes->set404Override('App\Controllers\Aop::index');
 // Set `$autoRoutesImproved` to true in `app/Config/Feature.php` and set the following to true.
 
 // AOP: This is set to true to make implementation easier.
-$routes->setAutoRoute(false);
+$routes->setAutoRoute(true);
 
 /*
  * --------------------------------------------------------------------

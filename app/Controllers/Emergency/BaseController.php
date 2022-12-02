@@ -49,14 +49,42 @@ abstract class BaseController extends Controller
         parent::initController($request, $response, $logger);
         // Preload any models, libraries, etc, here.
         // E.g.: $this->session = \Config\Services::session();
+        $this->allowCors(['http://localhost:4200', 'http://localhost:8085','http://localhost'],false);
     }
 
+    /**
+     * allow cors, use with prodency
+     */
 
+    protected function allowCors($allowed_domains=[], $forceAll=false)
+    {
+        if (array_key_exists('HTTP_ORIGIN', $_SERVER)) {
+            $origin = $_SERVER['HTTP_ORIGIN'];
+        } else if (array_key_exists('HTTP_REFERER', $_SERVER)) {
+            $origin = $_SERVER['HTTP_REFERER'];
+        } else {
+            $origin = $_SERVER['REMOTE_ADDR'];
+        }
+
+        if ($forceAll || in_array($origin, $allowed_domains)) {
+            header('Access-Control-Allow-Origin: ' . $origin);
+        }
+
+        header("Access-Control-Allow-Headers: Origin, X-API-KEY, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Access-Control-Allow-Headers, Authorization, observe, enctype, Content-Length, X-Csrf-Token");
+        header("Access-Control-Allow-Methods: GET, PUT, POST, DELETE, PATCH, OPTIONS");
+        header("Access-Control-Allow-Credentials: true");
+        $method = $_SERVER['REQUEST_METHOD'];
+        if ($method == "OPTIONS") {
+            header("HTTP/1.1 200 OK");
+            die();
+        }
+
+    }
 
     /**
-     * Add Styles to head 
+     * Add Styles to head
      *
-     * @param [type] $value type 
+     * @param [type] $value type
      * @param string $type
      * @return void
      */
@@ -98,7 +126,7 @@ abstract class BaseController extends Controller
         $status = (object) ['message' => '', 'error' => false, 'debug' => ''];
         try {
             $migrate = \Config\Services::migrations();
-        } catch (\Throwable $e) {
+        } catch (\Throwable$e) {
             $status->message = "Db Connection Error";
             $status->error = true;
             $status->debug = $e;
@@ -106,7 +134,7 @@ abstract class BaseController extends Controller
         if ($migrate !== null) {
             try {
                 $migrate->latest();
-            } catch (\Throwable $e) {
+            } catch (\Throwable$e) {
                 $status->message = "Db Update Error";
                 $status->error = true;
                 $status->debug = $e;
@@ -118,11 +146,10 @@ abstract class BaseController extends Controller
     protected function renderJson(
         array $responseBody,
         int $code = ResponseInterface::HTTP_OK
-    )
-    {
+    ) {
         return $this
             ->response
-                ->setStatusCode($code)
+            ->setStatusCode($code)
             ->setJSON($responseBody);
     }
 
@@ -134,7 +161,7 @@ abstract class BaseController extends Controller
      * @param array $arguments
      * @return object
      */
-    private function aopPreRender(string $module, string $returnPath, array $arguments = []): object
+    protected function aopPreRender(string $module, string $returnPath, array $arguments = []): object
     {
         $config = new \Config\Aop();
         $du = $config->develCi;
@@ -172,13 +199,13 @@ abstract class BaseController extends Controller
      *
      * @param string $module Name of module
      * @param string $returnPath Controller path or routing, for example: api/users
-     * @param array  $arguments Array of arguments to pass to Angular. 
-     *               All arguments can be accessed from within the Angular app using 
+     * @param array  $arguments Array of arguments to pass to Angular.
+     *               All arguments can be accessed from within the Angular app using
      *               document.getElementsByTagName("base")[0].dataset["key"] or document.getElementsByTagName("base")[0].dataset?.key
-     * 
+     *
      * @return string | \CodeIgniter\HTTP\RedirectResponse
      */
-    protected function aopRender(string $module, string $returnPath, array $arguments = []): string|\CodeIgniter\HTTP\RedirectResponse
+    protected function aopRender(string $module, string $returnPath, array $arguments = []): string | \CodeIgniter\HTTP\RedirectResponse
     {
         $pre = $this->aopPreRender($module, $returnPath, $arguments);
         if ($pre->type == 'redirect') {
@@ -188,29 +215,19 @@ abstract class BaseController extends Controller
         }
     }
 
-    /**
-     * allow cors, use with prodency
-     */
-    public function cors()
-    {
-        header("Access-Control-Max-Age: 3600");
-        header("Access-Control-Allow-Methods: POST, PUT, DELETE, UPDATE");
-        header("Access-Control-Allow-Origin: * ");
-        header("Content-Type: application/json; charset=UTF-8");
-        header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-    }
+
 
     /**
      * Make Angualer page integrable inside a Codeigniter page!
      *
      * @param string $module Name of module
      * @param string $returnPath Controller path or routing, for example: api/users
-     * @param array  $arguments Array of arguments to pass to Angular. 
-     *               All arguments can be accessed from within the Angular app using 
+     * @param array  $arguments Array of arguments to pass to Angular.
+     *               All arguments can be accessed from within the Angular app using
      *               document.getElementsByTagName("base")[0]. getAttribute("name")
      * @return void
      */
-    protected function aopModularize(string $module, string $returnPath, array $arguments = []): string|\CodeIgniter\HTTP\RedirectResponse
+    protected function aopModularize(string $module, string $returnPath, array $arguments = []): string | \CodeIgniter\HTTP\RedirectResponse
     {
         $pre = $this->aopPreRender($module, $returnPath, $arguments);
         if ($pre->type == 'redirect') {
@@ -234,8 +251,10 @@ abstract class BaseController extends Controller
             }
             foreach ($doc->getElementsByTagName('link') as $node) {
                 $val = $doc->saveXML($node);
-                if (strpos($val, 'rel="icon"') == false)
+                if (strpos($val, 'rel="icon"') == false) {
                     echo $val . PHP_EOL;
+                }
+
                 $this->addHeadFooter($val, 'row', 'head');
             }
             foreach ($doc->getElementsByTagName('script') as $node) {
@@ -254,6 +273,19 @@ abstract class BaseController extends Controller
             // Return Body content
             return $body;
         }
+    }
+
+    protected function replaceOnEnv($par, $value, $file)
+    {
+        $quoted = str_replace('.', '\.', $par);
+        $re = '/.*?' . $quoted . '.*?\= (.*)/m';
+        $file = preg_replace($re, "$par = $value", $file);
+        $re = '/' . $quoted . '.*?\= (.*)/m';
+        preg_match_all($re, $file, $matches, PREG_SET_ORDER, 0);
+        if (empty($matches)) {
+            $file .= "$par = $value\n";
+        }
+        return $file;
     }
 
 }
