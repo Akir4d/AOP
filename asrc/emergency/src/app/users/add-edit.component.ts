@@ -27,25 +27,14 @@ export class AddEditComponent implements OnInit {
 
         // form with validation rules
         this.form = this.formBuilder.group({
-            firstName: ['', Validators.required],
-            lastName: ['', Validators.required],
-            username: ['', Validators.required],
+            firstName: [this.accountService.userValue?.firstName, Validators.required],
+            lastName: [ this.accountService.userValue?.lastName, Validators.required],
+            username: [ this.accountService.userValue?.username, Validators.required],
             // password only required in add mode
             password: ['', [Validators.minLength(6), ...(!this.id ? [Validators.required] : [])]]
         });
 
-        this.title = 'Add User';
-        if (this.id) {
-            // edit mode
-            this.title = 'Edit User';
-            this.loading = true;
-            this.accountService.getById(this.id)
-                .pipe(first())
-                .subscribe(x => {
-                    this.form.patchValue(x);
-                    this.loading = false;
-                });
-        }
+        this.title = 'Edit Admin';
     }
 
     // convenience getter for easy access to form fields
@@ -79,8 +68,6 @@ export class AddEditComponent implements OnInit {
 
     private saveUser() {
         // create or update user based on id param
-        return this.id
-            ? this.accountService.update(this.id!, this.form.value)
-            : this.accountService.register(this.form.value);
+        return this.accountService.update(this.id!, this.form.value)
     }
 }
