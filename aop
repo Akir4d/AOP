@@ -539,6 +539,7 @@ const menu = () => {
     parseArguments(myArgs);
     switch (params.command) {
         case 'serve':
+            module = (module == 'all') ? MAINMODULE : module;
             serve(module);
             break;
         case 'spark':
@@ -595,7 +596,7 @@ const menu = () => {
 
 
 
-const getVersionOnPath = fileContent => {
+const getVersionOnPath = () => {
     let a = 0;
     let filePath = path.join(process.cwd(), 'aop');
     let fileContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
@@ -603,15 +604,15 @@ const getVersionOnPath = fileContent => {
         if (line.includes('version') && a++ < 5) {
             let tmp = line.split('=');
             if (tmp[1] !== undefined) {
-                let ver = parseFloat(tmp.split(';')[0].trim());
-                return (ver !== NaN)?ver:0;
+                let ver = parseFloat(tmp[1].split(';')[0].trim());
+                return (ver !== NaN) ? ver : 0;
             }
         }
     }
     return 0;
 }
 
-if (fs.existsSync(filePath)) {
+if (fs.existsSync(path.join(process.cwd(), 'aop'))) {
     let pathVersion = getVersionOnPath();
     if (pathVersion > version) {
         let rl = readline.createInterface({
