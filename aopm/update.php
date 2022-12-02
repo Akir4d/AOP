@@ -163,11 +163,6 @@ if (!file_exists($composerPath . DIRECTORY_SEPARATOR . 'vendor') || !file_exists
 
         file_put_contents($composerPath . '/spark', $spark);
 
-        if (php_sapi_name() !== 'cli') {
-            echo '<script>setTimeout(()=>parent.window.location.reload(true), 10000);</script>';
-            echo '</section></body></html>';
-            die();
-        }
         /**
          * $re = '/(\/\*.*?AOP-AUTOGEN.*?END-AOP-AUTOGEN.*?\*\/)/s';
          * $result = preg_replace($re, $subst, $str, 1);
@@ -175,6 +170,11 @@ if (!file_exists($composerPath . DIRECTORY_SEPARATOR . 'vendor') || !file_exists
          */
     } else {
         file_put_contents($updateFile, "done", FILE_APPEND);
+    }
+    if (php_sapi_name() !== 'cli') {
+        echo '<script>setTimeout(()=>parent.window.location.reload(true), 10000);</script>';
+        echo '</section></body></html>';
+        die();
     }
 
 }
