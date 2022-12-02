@@ -35,7 +35,7 @@ aop serve
 
 to use the command as eg: aop build
 
-|command| Description |
+|Command| Description |
 |-------|--------------------|
 |serve|starts Angular and Codeigniter develop serve at http://localhost:4200 and http://localhost:8085 you can serve also a different module as comment for example: aop serve emergency| 
 |spark|starts Codeigniter spark utility|
@@ -51,8 +51,8 @@ to use the command as eg: aop build
 
 
 Options:
-|option| alternative command | description |
-|-------|--------------------|-------------|
+|   Option parm   | Alternative parm  | Description         |
+|------------|----------------------|---------------------|
  |-c path| --copy=path  |after build command will copy the build to a folder or remote ftp server with syntax ftp://user:pass@host[ :path]|
  |-fp port| --ftp-port=port |change the default ftp port.|
  |-u username| --username=user |ftp username.|
