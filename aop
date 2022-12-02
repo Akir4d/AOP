@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 const version = 0.27;
 const { exec, spawn, spawnSync, execSync } = require("child_process");
 const console = require("console");
@@ -26,239 +27,239 @@ var forceClean = false;
 
 
 class FTPClient {
-  constructor(ftp, host = 'localhost', port = 21, username = 'anonymous', password = 'guest', secure = false) {
-    this.client = new ftp.Client(0);
-    this.settings = {
-      host: host,
-      port: port,
-      user: username,
-      password: password,
-      secure: secure
-    };
-  }
-
-  async setup() {
-    if (this.client.closed) {
-      this.client.trackProgress(info => {
-        info.name = info.name.length ? info.name : "Listing";
-        let tabs = makeTab(info.name + info.type, 45);
-        let trans = (info.type == "upload") ? G + E + "Tr" + N : E + "Pr" + N;
-        if (info.bytes) {
-          let kb = info.bytes / 1000;
-          let tt = makeTab(String(kb), 10);
-          console.log(info.type, "->", B + E + info.name + N, tabs, trans, tt, info.bytes / 1000, "kB");
-        }
-      })
-      await this.client.access(this.settings);
+    constructor(ftp, host = 'localhost', port = 21, username = 'anonymous', password = 'guest', secure = false) {
+        this.client = new ftp.Client(0);
+        this.settings = {
+            host: host,
+            port: port,
+            user: username,
+            password: password,
+            secure: secure
+        };
     }
-  }
 
-  async removeByExtension(ext) {
-    let files = await this.client.list();
-    for (let file of files) {
-      if (file.type == 1 && file.name.includes('.' + ext)) {
-        await this.client.remove(file.name);
-      }
-    }
-  }
-
-  async exists(exist) {
-    let files = await this.client.list();
-    for (let file of files) {
-      if (file.name == exists) {
-        return true;
-      }
-    }
-  }
-
-
-  async removeAngularFiles() {
-    await this.removeByExtension('css');
-    await this.removeByExtension('js');
-    await this.removeByExtension('html');
-  }
-
-  upload(sourcePath, remotePath) {
-    (async () => {
-      try {
-        await this.setup();
-        if (forceClean) {
-          await this.client.ensureDir(remotePath);
-          await this.client.clearWorkingDir();
-        } else {
-          await this.removeAngularFiles();
+    async setup() {
+        if (this.client.closed) {
+            this.client.trackProgress(info => {
+                info.name = info.name.length ? info.name : "Listing";
+                let tabs = makeTab(info.name + info.type, 45);
+                let trans = (info.type == "upload") ? G + E + "Tr" + N : E + "Pr" + N;
+                if (info.bytes) {
+                    let kb = info.bytes / 1000;
+                    let tt = makeTab(String(kb), 10);
+                    console.log(info.type, "->", B + E + info.name + N, tabs, trans, tt, info.bytes / 1000, "kB");
+                }
+            })
+            await this.client.access(this.settings);
         }
-        await this.client.uploadFromDir(sourcePath, remotePath);
-        if (fs.existsSync(path.join(sourcePath, 'backend'))) {
-          await this.client.cd('backend');
-        }
-        await this.client.cd('writable');
-        await this.removeByExtension('info.txt');
-      } catch (err) {
-        console.log(err);
-      }
-      this.close();
-    })();
-  }
+    }
 
-  close() {
-    this.client.close();
-    process.exit(0);
-  }
+    async removeByExtension(ext) {
+        let files = await this.client.list();
+        for (let file of files) {
+            if (file.type == 1 && file.name.includes('.' + ext)) {
+                await this.client.remove(file.name);
+            }
+        }
+    }
+
+    async exists(exist) {
+        let files = await this.client.list();
+        for (let file of files) {
+            if (file.name == exists) {
+                return true;
+            }
+        }
+    }
+
+
+    async removeAngularFiles() {
+        await this.removeByExtension('css');
+        await this.removeByExtension('js');
+        await this.removeByExtension('html');
+    }
+
+    upload(sourcePath, remotePath) {
+        (async() => {
+            try {
+                await this.setup();
+                if (forceClean) {
+                    await this.client.ensureDir(remotePath);
+                    await this.client.clearWorkingDir();
+                } else {
+                    await this.removeAngularFiles();
+                }
+                await this.client.uploadFromDir(sourcePath, remotePath);
+                if (fs.existsSync(path.join(sourcePath, 'backend'))) {
+                    await this.client.cd('backend');
+                }
+                await this.client.cd('writable');
+                await this.removeByExtension('info.txt');
+            } catch (err) {
+                console.log(err);
+            }
+            this.close();
+        })();
+    }
+
+    close() {
+        this.client.close();
+        process.exit(0);
+    }
 
 }
 
 const parseArguments = () => {
-  for (let a = 0; myArgs.length > a; a++) {
-    let m = myArgs[a];
-    if (typeof m == 'string' && m.startsWith('-')) {
-      let search = m.split('=')[0];
-      switch (search) {
-        case '-u':
-          params.username = myArgs[++a];
-          break;
-        case '--username':
-          params.username = m.split('=')[1];
-          break;
-        case '-p':
-          params.password = myArgs[++a];
-          break;
-        case '--password':
-          params.password = m.split('=')[1];
-          break;
-        case '-c':
-          params.copy = myArgs[++a];
-          break;
-        case '--copy':
-          params.copy = m.split('=')[1];
-          break;
-        case '-fp':
-          ftpPort = myArgs[++a];
-          break;
-        case '--ftp-port':
-          ftpPort = m.split('=')[1];
-          break;
-        case '--force-clean':
-          forceClean = true;
-          break;
-      }
-    } else {
-      if (!params.hasOwnProperty('command')) params.command = m;
+    for (let a = 0; myArgs.length > a; a++) {
+        let m = myArgs[a];
+        if (typeof m == 'string' && m.startsWith('-')) {
+            let search = m.split('=')[0];
+            switch (search) {
+                case '-u':
+                    params.username = myArgs[++a];
+                    break;
+                case '--username':
+                    params.username = m.split('=')[1];
+                    break;
+                case '-p':
+                    params.password = myArgs[++a];
+                    break;
+                case '--password':
+                    params.password = m.split('=')[1];
+                    break;
+                case '-c':
+                    params.copy = myArgs[++a];
+                    break;
+                case '--copy':
+                    params.copy = m.split('=')[1];
+                    break;
+                case '-fp':
+                    ftpPort = myArgs[++a];
+                    break;
+                case '--ftp-port':
+                    ftpPort = m.split('=')[1];
+                    break;
+                case '--force-clean':
+                    forceClean = true;
+                    break;
+            }
+        } else {
+            if (!params.hasOwnProperty('command')) params.command = m;
+        }
     }
-  }
 }
 
 const makeTab = (name, len) => {
-  let t = (name > 0) ? parseInt(name) : 1;
-  t = len - name.length;
-  t = t > 0 ? t : 1;
-  let tabs = "";
-  for (let a = 0; t > a; a++)tabs += " "
-  return tabs;
+    let t = (name > 0) ? parseInt(name) : 1;
+    t = len - name.length;
+    t = t > 0 ? t : 1;
+    let tabs = "";
+    for (let a = 0; t > a; a++) tabs += " "
+    return tabs;
 }
 
 const copyFileSync = (source, target) => {
 
-  var targetFile = target;
+    var targetFile = target;
 
-  // If target is a directory, a new file with the same name will be created
-  if (fs.existsSync(target)) {
-    if (fs.lstatSync(target).isDirectory()) {
-      targetFile = path.join(target, path.basename(source));
+    // If target is a directory, a new file with the same name will be created
+    if (fs.existsSync(target)) {
+        if (fs.lstatSync(target).isDirectory()) {
+            targetFile = path.join(target, path.basename(source));
+        }
     }
-  }
-  fs.writeFileSync(targetFile, fs.readFileSync(source));
+    fs.writeFileSync(targetFile, fs.readFileSync(source));
 }
 
 const ftpSync = (source, target) => {
-  if (forceClean) {
-    let rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
-    rl.question(`${R}${E}--force-clean\n\n is a personal developer feature that will erase all files from the ftp remote folder before copying on it.\n\n - Are you sure you want to use it?\n\n - Have you backed up this folder? ${N} [${G}${E}NO${N}]/${R}${E}yes${N} `, ans => {
-      if (ans == 'yes') {
+    if (forceClean) {
+        let rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        });
+        rl.question(`${R}${E}--force-clean\n\n is a personal developer feature that will erase all files from the ftp remote folder before copying on it.\n\n - Are you sure you want to use it?\n\n - Have you backed up this folder? ${N} [${G}${E}NO${N}]/${R}${E}yes${N} `, ans => {
+            if (ans == 'yes') {
+                ftpSyncReal(source, target);
+            } else {
+                process.exit(0);
+            }
+        });
+    } else {
         ftpSyncReal(source, target);
-      } else {
-        process.exit(0);
-      }
-    });
-  } else {
-    ftpSyncReal(source, target);
-  }
+    }
 
 }
 
 const ftpSyncReal = (source, target) => {
-  var ftp = null;
-  try {
-    ftp = require(path.join(process.cwd(), 'node_modules', 'basic-ftp'));
-  } catch (e) {
-    spawnSync(NPM, ['install', 'basic-ftp', '--save'], SPAWNARG);
-    ftp = require(path.join(process.cwd(), 'node_modules', 'basic-ftp'));
-  }
-
-  if (ftp != null) {
-    let cred, chost, user, pass = '';
-    if (params.hasOwnProperty('username')) {
-      user = params.username;
-      pass = params.password;
-      let ll = target.split('@');
-      chost = (typeof ll[1] == "undefined") ? ll[0] : ll[1];
-    } else {
-      [cred, chost] = target.split('@');
-      [user, pass] = cred.split(':');
+    var ftp = null;
+    try {
+        ftp = require(path.join(process.cwd(), 'node_modules', 'basic-ftp'));
+    } catch (e) {
+        spawnSync(NPM, ['install', 'basic-ftp', '--save'], SPAWNARG);
+        ftp = require(path.join(process.cwd(), 'node_modules', 'basic-ftp'));
     }
-    let [host, tar] = chost.split(':');
-    tar = (tar == null) ? '' : tar;
-    const ftpClient = new FTPClient(ftp, host, ftpPort, user, pass, ftpSecure);
-    ftpClient.upload(source, tar);
-  }
+
+    if (ftp != null) {
+        let cred, chost, user, pass = '';
+        if (params.hasOwnProperty('username')) {
+            user = params.username;
+            pass = params.password;
+            let ll = target.split('@');
+            chost = (typeof ll[1] == "undefined") ? ll[0] : ll[1];
+        } else {
+            [cred, chost] = target.split('@');
+            [user, pass] = cred.split(':');
+        }
+        let [host, tar] = chost.split(':');
+        tar = (tar == null) ? '' : tar;
+        const ftpClient = new FTPClient(ftp, host, ftpPort, user, pass, ftpSecure);
+        ftpClient.upload(source, tar);
+    }
 }
 
 const copyFolderRecursiveSync = (source, target) => {
-  var files = [];
+    var files = [];
 
-  // Check if folder needs to be created or integrated
-  var targetFolder = path.join(target, path.basename(source));
-  if (!fs.existsSync(targetFolder)) {
-    fs.mkdirSync(targetFolder);
-  }
+    // Check if folder needs to be created or integrated
+    var targetFolder = path.join(target, path.basename(source));
+    if (!fs.existsSync(targetFolder)) {
+        fs.mkdirSync(targetFolder);
+    }
 
-  // Copy
-  if (fs.lstatSync(source).isDirectory()) {
-    files = fs.readdirSync(source);
-    files.forEach(function (file) {
-      var curSource = path.join(source, file);
-      if (fs.lstatSync(curSource).isDirectory()) {
-        copyFolderRecursiveSync(curSource, targetFolder);
-      } else {
-        copyFileSync(curSource, targetFolder);
-      }
-    });
-  }
+    // Copy
+    if (fs.lstatSync(source).isDirectory()) {
+        files = fs.readdirSync(source);
+        files.forEach(function(file) {
+            var curSource = path.join(source, file);
+            if (fs.lstatSync(curSource).isDirectory()) {
+                copyFolderRecursiveSync(curSource, targetFolder);
+            } else {
+                copyFileSync(curSource, targetFolder);
+            }
+        });
+    }
 }
 
 const copyInsideSourceRecursiveSync = (source, target, show = false) => {
-  if (!fs.existsSync(target)) {
-    fs.mkdirSync(target);
-  }
-  let files = fs.readdirSync(source);
-
-  for (let file of files) {
-    let np = path.join(source, file);
-
-    if (show) console.log('copying', B + E + np + N, makeTab(np, 50), '->', G + E + target + N)
-    if (fs.lstatSync(np).isDirectory()) {
-      copyFolderRecursiveSync(np, target);
-    } else {
-      copyFileSync(np, target);
+    if (!fs.existsSync(target)) {
+        fs.mkdirSync(target);
     }
-  }
+    let files = fs.readdirSync(source);
+
+    for (let file of files) {
+        let np = path.join(source, file);
+
+        if (show) console.log('copying', B + E + np + N, makeTab(np, 50), '->', G + E + target + N)
+        if (fs.lstatSync(np).isDirectory()) {
+            copyFolderRecursiveSync(np, target);
+        } else {
+            copyFileSync(np, target);
+        }
+    }
 }
 
 const usage = u => {
-  console.log(`\n${R}${E}usage${N}: node aop [Command] [ARG]\n\nCommands:
+    console.log(`\n${R}${E}usage${N}: node aop [Command] [ARG]\n\nCommands:
     ${G}${E}serve${N} \t- starts ${E}Angular${N} and ${E}Codeigniter${N} develop serve at ${Y}${E}http://localhost:4200${N} and ${Y}${E}http://localhost:8085${N},\n\t \t  you can serve also a different module as comment for example: aop serve emergency\n
     ${G}${E}spark${N} \t- starts ${E}Codeigniter${N} spark utility\n
     ${G}${E}ng${N}    \t- calls ${E}Angular${N} ng utility, you can start also use it to a different module for example: aop ng emergency ...args
@@ -276,168 +277,168 @@ const usage = u => {
     ${G}${E}-u\t${N} username\tor ${G}${E}--username=username${N}\tftp username.
     ${G}${E}-p\t${N} password\tor ${G}${E}--password=password${N}\tftp password.\n\nversion: ${version}
   `);
-  process.exit(0)
+    process.exit(0)
 }
 
 const check = f => {
-  exec(WHICH + ' npm', (error, stdout) => {
-    if (error) {
-      console.log(`${R}${E}error:${N}${E} unable to find npm executable${N}`);
-      return;
-    } else {
-      NPM = stdout.split("\n")[0].trim().replace(/ /g, '" "');
-      NPX = execSync(WHICH + ' npx').toString();
-      if (!fs.existsSync('node_modules')) {
-        spawnSync(NPM, ['install'], SPAWNARG);
-      }
-      exec(WHICH + ' php', (error, stdout) => {
+    exec(WHICH + ' npm', (error, stdout) => {
         if (error) {
-          console.log(`${R}${E}error:${N}${E} unable to find php executable${N}`);
-          return;
+            console.log(`${R}${E}error:${N}${E} unable to find npm executable${N}`);
+            return;
         } else {
-          PHP = stdout.split("\n")[0].trim().replace(/ /g, '" "');
-          exec(WHICH + ' ng', (error, stdout) => {
-            if (error) {
-              console.log(`${G}${E}Installing missed ng command:${N}`);
-              npmprecess = spawn(NPM, ['install', '-g', '@angular/cli@14'], SPAWNARG);
-              npmprecess.on('exit', () => check(f));
-              return;
-            } else {
-              NG = stdout.split("\n")[0].trim().replace(/ /g, '" "');
-              f();
+            NPM = stdout.split("\n")[0].trim().replace(/ /g, '" "');
+            NPX = execSync(WHICH + ' npx').toString();
+            if (!fs.existsSync('node_modules')) {
+                spawnSync(NPM, ['install'], SPAWNARG);
             }
-          });
+            exec(WHICH + ' php', (error, stdout) => {
+                if (error) {
+                    console.log(`${R}${E}error:${N}${E} unable to find php executable${N}`);
+                    return;
+                } else {
+                    PHP = stdout.split("\n")[0].trim().replace(/ /g, '" "');
+                    exec(WHICH + ' ng', (error, stdout) => {
+                        if (error) {
+                            console.log(`${G}${E}Installing missed ng command:${N}`);
+                            npmprecess = spawn(NPM, ['install', '-g', '@angular/cli@14'], SPAWNARG);
+                            npmprecess.on('exit', () => check(f));
+                            return;
+                        } else {
+                            NG = stdout.split("\n")[0].trim().replace(/ /g, '" "');
+                            f();
+                        }
+                    });
+                }
+            });
         }
-      });
-    }
-  });
+    });
 }
 
 const serve = (module) => {
-  if (!fs.existsSync('.env')) copyFileSync(path.join('envs', 'development.env'), '.env');
-  const codeigniter = spawn(PHP, ['spark', 'serve', '--port', 8085], SPAWNARG);
-  SPAWNARG.cwd = path.join('asrc', module);
-  if (!fs.existsSync(path.join(SPAWNARG.cwd, 'node_modules'))) spawnSync(NPM, ['install'], SPAWNARG);
-  const angular = spawn(NG, ['serve'], SPAWNARG);
-  delete SPAWNARG.cwd;
-  process.on('SIGINT', () => {
-    console.log(`\n\n${R}${E}Killed${N}${N}:\n ${G}✔${N} ${E}ng serve${N} with pid: ${G}${angular.pid}${N} \n ${G}✔${N} ${E}spark serve${N} with pid: ${G}${codeigniter.pid}${N}`);
-    angular.kill;
-    codeigniter.kill;
-  });
+    if (!fs.existsSync('.env')) copyFileSync(path.join('envs', 'development.env'), '.env');
+    const codeigniter = spawn(PHP, ['spark', 'serve', '--port', 8085], SPAWNARG);
+    SPAWNARG.cwd = path.join('asrc', module);
+    if (!fs.existsSync(path.join(SPAWNARG.cwd, 'node_modules'))) spawnSync(NPM, ['install'], SPAWNARG);
+    const angular = spawn(NG, ['serve'], SPAWNARG);
+    delete SPAWNARG.cwd;
+    process.on('SIGINT', () => {
+        console.log(`\n\n${R}${E}Killed${N}${N}:\n ${G}✔${N} ${E}ng serve${N} with pid: ${G}${angular.pid}${N} \n ${G}✔${N} ${E}spark serve${N} with pid: ${G}${codeigniter.pid}${N}`);
+        angular.kill;
+        codeigniter.kill;
+    });
 }
 
 const buildAngular = e => {
-  if (!fs.existsSync('vendor')) spawnSync(PHP, [path.join('aopm', 'update.php')], SPAWNARG);
-  if (e == 'all') {
-    files = fs.readdirSync('asrc');
-    for (let file of files) {
-      if (file.startsWith('.')) continue;
-      console.log(`${G}${E}Building ${Y}${E}${file}${N}`);
-      convertToModule(file);
-      SPAWNARG.cwd = path.join('asrc', file);
-      if (!fs.existsSync(path.join(SPAWNARG.cwd, 'node_modules'))) spawnSync(NPM, ['install'], SPAWNARG);
-      spawnSync(NG, ['build'], SPAWNARG);
+    if (!fs.existsSync('vendor')) spawnSync(PHP, [path.join('aopm', 'update.php')], SPAWNARG);
+    if (e == 'all') {
+        files = fs.readdirSync('asrc');
+        for (let file of files) {
+            if (file.startsWith('.')) continue;
+            console.log(`${G}${E}Building ${Y}${E}${file}${N}`);
+            convertToModule(file);
+            SPAWNARG.cwd = path.join('asrc', file);
+            if (!fs.existsSync(path.join(SPAWNARG.cwd, 'node_modules'))) spawnSync(NPM, ['install'], SPAWNARG);
+            spawnSync(NG, ['build'], SPAWNARG);
+        }
+    } else {
+        console.log(`${G}${E}Building ${Y}${E}${MAINMODULE}${N}`);
+        SPAWNARG.cwd = path.join('asrc', e)
+        spawnSync(NG, ['build'], SPAWNARG);
     }
-  } else {
-    console.log(`${G}${E}Building ${Y}${E}${MAINMODULE}${N}`);
-    SPAWNARG.cwd = path.join('asrc', e)
-    spawnSync(NG, ['build'], SPAWNARG);
-  }
-  delete SPAWNARG.cwd
+    delete SPAWNARG.cwd
 }
 
 const buildForApache = e => {
-  buildAngular(e);
-  console.log(`${Y}${E}Cleaning build folder...${N}`);
-  fs.rmSync('build', { recursive: true, force: true });
-  console.log(`${Y}${E}Coping all php files inside build${N}`);
-  copyInsideSourceRecursiveSync('public', 'build');
-  fs.mkdirSync(path.join('build', 'backend'));
-  copyFolderRecursiveSync('aopm', path.join('build', 'backend'));
-  copyFolderRecursiveSync('app', path.join('build', 'backend'));
-  copyFolderRecursiveSync(path.join('vendor', 'codeigniter4', 'framework', 'writable'), path.join('build', 'backend'));
-  copyFileSync(path.join('envs', 'production.env'), path.join('build', 'backend', '.env'));
-  copyFileSync('composer.json', path.join('build', 'backend'));
-  copyFileSync(path.join('app', '.htaccess'), path.join('build', 'backend'));
-  fs.writeFileSync(path.join('build', 'index.php'), fs.readFileSync(path.join('build', 'index.php'), 'utf-8').replace(/\.\.\//, 'backend/'));
-  fs.writeFileSync(path.join('build', 'backend', 'spark'), fs.readFileSync('spark', 'utf-8').replace(/\.\.\//, 'backend/').replace('public', '..'));
-  fs.mkdirSync(path.join('build', 'backend', 'cache'));
-  copyBuild();
+    buildAngular(e);
+    console.log(`${Y}${E}Cleaning build folder...${N}`);
+    fs.rmSync('build', { recursive: true, force: true });
+    console.log(`${Y}${E}Coping all php files inside build${N}`);
+    copyInsideSourceRecursiveSync('public', 'build');
+    fs.mkdirSync(path.join('build', 'backend'));
+    copyFolderRecursiveSync('aopm', path.join('build', 'backend'));
+    copyFolderRecursiveSync('app', path.join('build', 'backend'));
+    copyFolderRecursiveSync(path.join('vendor', 'codeigniter4', 'framework', 'writable'), path.join('build', 'backend'));
+    copyFileSync(path.join('envs', 'production.env'), path.join('build', 'backend', '.env'));
+    copyFileSync('composer.json', path.join('build', 'backend'));
+    copyFileSync(path.join('app', '.htaccess'), path.join('build', 'backend'));
+    fs.writeFileSync(path.join('build', 'index.php'), fs.readFileSync(path.join('build', 'index.php'), 'utf-8').replace(/\.\.\//, 'backend/'));
+    fs.writeFileSync(path.join('build', 'backend', 'spark'), fs.readFileSync('spark', 'utf-8').replace(/\.\.\//, 'backend/').replace('public', '..'));
+    fs.mkdirSync(path.join('build', 'backend', 'cache'));
+    copyBuild();
 }
 
 const buildForOthers = e => {
-  buildAngular(e);
-  console.log(`${Y}${E}Cleaning build folder...${N}`);
-  fs.rmSync('build', { recursive: true, force: true });
-  fs.mkdirSync('build');
-  console.log(`${Y}${E}Coping all php files inside build${N}`);
-  copyFolderRecursiveSync('public', 'build');
-  copyFolderRecursiveSync('aopm', path.join('build'));
-  copyFolderRecursiveSync('app', path.join('build'));
-  copyFolderRecursiveSync(copyFolderRecursiveSync(path.join('vendor', 'codeigniter4', 'framework', 'writable')), path.join('build'));
-  copyFileSync(path.join('envs', 'production.env'), path.join('build', '.env'));
-  copyFileSync('composer.json', path.join('build'));
-  copyFileSync('.htaccess', path.join('build'));
-  fs.mkdirSync(path.join('build', 'cache'));
-  copyBuild();
+    buildAngular(e);
+    console.log(`${Y}${E}Cleaning build folder...${N}`);
+    fs.rmSync('build', { recursive: true, force: true });
+    fs.mkdirSync('build');
+    console.log(`${Y}${E}Coping all php files inside build${N}`);
+    copyFolderRecursiveSync('public', 'build');
+    copyFolderRecursiveSync('aopm', path.join('build'));
+    copyFolderRecursiveSync('app', path.join('build'));
+    copyFolderRecursiveSync(copyFolderRecursiveSync(path.join('vendor', 'codeigniter4', 'framework', 'writable')), path.join('build'));
+    copyFileSync(path.join('envs', 'production.env'), path.join('build', '.env'));
+    copyFileSync('composer.json', path.join('build'));
+    copyFileSync('.htaccess', path.join('build'));
+    fs.mkdirSync(path.join('build', 'cache'));
+    copyBuild();
 }
 
 const copyBuild = () => {
-  let rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-  rl.question(`${Y}${E}Would yo like to pre-exec composer in build folder ${N}? [${G}${E}yes${N}]/${R}${E}no${N} `, ans => {
-    copyBuildReal((ans !== 'no')?'ok':'no');
-  });
+    let rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+    rl.question(`${Y}${E}Would yo like to pre-exec composer in build folder ${N}? [${G}${E}yes${N}]/${R}${E}no${N} `, ans => {
+        copyBuildReal((ans !== 'no') ? 'ok' : 'no');
+    });
 }
 
 const copyBuildReal = u => {
-  if(u == 'ok'){
-    let update = (fs.existsSync(path.join('build', 'backend'))) ? path.join('build', 'backend') : path.join('build');
-      delete SPAWNARG.cwd;
-      spawnSync(PHP, [path.join(update, 'aopm', 'update.php')], SPAWNARG);
-      fs.unlinkSync(path.join(update, 'writable', 'firstup.info.txt'));
-      fs.rmdirSync(path.join(update, 'cache'), { recursive: true, force: true});
-      fs.writeFileSync(path.join(update, 'writable', 'nocomposer.txt'), 'remove to reenable composer autoupdate');
+    if (u == 'ok') {
+        let update = (fs.existsSync(path.join('build', 'backend'))) ? path.join('build', 'backend') : path.join('build');
+        delete SPAWNARG.cwd;
+        spawnSync(PHP, [path.join(update, 'aopm', 'update.php')], SPAWNARG);
+        fs.unlinkSync(path.join(update, 'writable', 'firstup.info.txt'));
+        fs.rmdirSync(path.join(update, 'cache'), { recursive: true, force: true });
+        fs.writeFileSync(path.join(update, 'writable', 'nocomposer.txt'), 'remove to reenable composer autoupdate');
 
-  }
-  if (params.hasOwnProperty('copy')) {
-    for (let rem of ['public', 'index.php', 'main.html', '.env', '.htaccess'])
-      if (fs.existsSync(path.join(params.copy, rem)))
-        fs.rmSync(path.join(params.copy, rem), { recursive: true, force: true });
-    switch (params.copy.slice(0, 6)) {
-      case 'ftp://':
-        ftpSync('build', params.copy.slice(6));
-        break;
-      case 'sftp:/':
-      case 'ftps:/':
-        ftpSecure = true;
-        ftpSync('build', params.copy.slice(7));
-        break;
-      default:
-        copyInsideSourceRecursiveSync('build', params.copy, true);
-        let fistup = ['aopm', 'versions', 'firstup.info.txt'];
-        if (fs.existsSync(path.join(params.copy, 'backend', ...fistup))) {
-          fs.rmSync(path.join(params.copy, 'backend', ...fistup));
-        }
-        if (fs.existsSync(path.join(params.copy, ...fistup))) {
-          fs.rmSync(path.join(params.copy, ...fistup));
-        }
     }
-  } else {
-    process.exit(0);
-  }
-  
+    if (params.hasOwnProperty('copy')) {
+        for (let rem of['public', 'index.php', 'main.html', '.env', '.htaccess'])
+            if (fs.existsSync(path.join(params.copy, rem)))
+                fs.rmSync(path.join(params.copy, rem), { recursive: true, force: true });
+        switch (params.copy.slice(0, 6)) {
+            case 'ftp://':
+                ftpSync('build', params.copy.slice(6));
+                break;
+            case 'sftp:/':
+            case 'ftps:/':
+                ftpSecure = true;
+                ftpSync('build', params.copy.slice(7));
+                break;
+            default:
+                copyInsideSourceRecursiveSync('build', params.copy, true);
+                let fistup = ['aopm', 'versions', 'firstup.info.txt'];
+                if (fs.existsSync(path.join(params.copy, 'backend', ...fistup))) {
+                    fs.rmSync(path.join(params.copy, 'backend', ...fistup));
+                }
+                if (fs.existsSync(path.join(params.copy, ...fistup))) {
+                    fs.rmSync(path.join(params.copy, ...fistup));
+                }
+        }
+    } else {
+        process.exit(0);
+    }
+
 }
 
 const installAOP = e => {
-  if (!fs.existsSync('.env')) copyFileSync(path.join('envs', 'development.env'), '.env');
-  let nodePath = path.normalize(path.join(NG, '..'));
-  copyFileSync('aop', nodePath, { overwrite: true | false });
-  if (process.platform.startsWith('win')) {
-    fs.writeFileSync(path.join(nodePath, 'aop.cmd'), `@ECHO off
+    if (!fs.existsSync('.env')) copyFileSync(path.join('envs', 'development.env'), '.env');
+    let nodePath = path.normalize(path.join(NG, '..'));
+    copyFileSync('aop', nodePath, { overwrite: true | false });
+    if (process.platform.startsWith('win')) {
+        fs.writeFileSync(path.join(nodePath, 'aop.cmd'), `@ECHO off
     GOTO start
     :find_dp0
     SET dp0=%~dp0
@@ -454,177 +455,189 @@ const installAOP = e => {
     )
     
     endLocal & goto #_undefined_# 2>NUL || title %COMSPEC% & "%_prog%"  "%dp0%\\aop" %*`);
-    copyFileSync('aop.cmd', nodePath);
-  } else {
-    fs.chmodSync(path.join(nodePath, 'aop'), '755');
-  }
+        copyFileSync('aop.cmd', nodePath);
+    } else {
+        fs.chmodSync(path.join(nodePath, 'aop'), '755');
+    }
 }
 
 const createNewModule = module => {
-  let dest = path.join('asrc', module);
-  if (fs.existsSync(dest)) {
-    console.log(`The module already exists! I can't overwrite it!`);
-    return;
-  }
-  SPAWNARG.cwd = 'asrc';
-  spawnSync(NG, ['new', module, '--style', 'scss', '--routing', '--defaults'], SPAWNARG);
+    let dest = path.join('asrc', module);
+    if (fs.existsSync(dest)) {
+        console.log(`The module already exists! I can't overwrite it!`);
+        return;
+    }
+    SPAWNARG.cwd = 'asrc';
+    spawnSync(NG, ['new', module, '--style', 'scss', '--routing', '--defaults'], SPAWNARG);
 
-  delete SPAWNARG.cwd;
-  convertToModule(module);
+    delete SPAWNARG.cwd;
+    convertToModule(module);
 }
 
 const convertToModule = module => {
-  let file = path.join('asrc', module, 'angular.json');
-  let filebk = path.join('asrc', module, 'angular-no-module.json');
-  if (!fs.existsSync(file)) {
-    console.log(`The module doesn't exists!`);
-    return;
-  }
-  const data = JSON.parse(fs.readFileSync(file));
-  let dst = '../../public/amodules/' + module;
-  let firstkey = Object.keys(data.projects)[0];
-  let project = data.hasOwnProperty('defaultProject') ? data.defaultProject : firstkey;
-  if (data.projects.hasOwnProperty(project) && data.projects[project].architect.build.options.outputPath == dst) {
-    console.log(`Project already converted!`);
-    return;
-  }
-  copyFileSync(file, filebk);
+    let file = path.join('asrc', module, 'angular.json');
+    let filebk = path.join('asrc', module, 'angular-no-module.json');
+    if (!fs.existsSync(file)) {
+        console.log(`The module doesn't exists!`);
+        return;
+    }
+    const data = JSON.parse(fs.readFileSync(file));
+    let dst = '../../public/amodules/' + module;
+    let firstkey = Object.keys(data.projects)[0];
+    let project = data.hasOwnProperty('defaultProject') ? data.defaultProject : firstkey;
+    if (data.projects.hasOwnProperty(project) && data.projects[project].architect.build.options.outputPath == dst) {
+        console.log(`Project already converted!`);
+        return;
+    }
+    copyFileSync(file, filebk);
 
-  data.projects[project].architect.build.options.outputPath = dst;
-  fs.writeFileSync(file, JSON.stringify(data, null, 4));
+    data.projects[project].architect.build.options.outputPath = dst;
+    fs.writeFileSync(file, JSON.stringify(data, null, 4));
 }
 
 const getRecursive = (pArray, recursive = true) => {
-  let arr = [];
-  let ph = path.join(...pArray);
+    let arr = [];
+    let ph = path.join(...pArray);
 
-  for (file of fs.readdirSync(ph)) {
-    let fss = path.join(ph, file);
-    if (!file.startsWith('.')) {
-      if (!fs.lstatSync(fss).isDirectory()) {
-        let un = [...pArray, file].join('/');
-        if (!arr.includes(un)) arr.push(un);
-      } else {
-        if (recursive) for (fl of getRecursive([...pArray, file])) arr.push(fl);
-      }
+    for (file of fs.readdirSync(ph)) {
+        let fss = path.join(ph, file);
+        if (!file.startsWith('.')) {
+            if (!fs.lstatSync(fss).isDirectory()) {
+                let un = [...pArray, file].join('/');
+                if (!arr.includes(un)) arr.push(un);
+            } else {
+                if (recursive)
+                    for (fl of getRecursive([...pArray, file])) arr.push(fl);
+            }
+        }
     }
-  }
-  return arr;
+    return arr;
 }
 
 const loadAssets = asset => {
-  if (asset == MAINMODULE) return console.log(`to get asset you have to provide a valid npm module, for example: admin-lte@^3.2`);
-  let assetImport = { packages: {} };
-  let mod = (asset.includes('@')) ? asset.split('@')[0] : asset;
-  if (fs.existsSync('assets.json')) assetImport = JSON.parse(fs.readFileSync('assets.json'));
-  let dest = path.join('asset_modules', mod);
-  if (!fs.existsSync(dest)) {
-    fs.mkdirSync(dest, { recursive: true, force: true });
-  }
-  spawnSync(NPM, ['install', asset, '---prefix', dest], SPAWNARG);
-  assetImport.packages[mod] = JSON.parse(fs.readFileSync(path.join(dest, 'package.json')));
-  if (mod == '') return console.log(`you have to manually set what to import to asset`);
-  if (!assetImport.hasOwnProperty(mod)) assetImport[mod] = [];
-  for (let arr of getRecursive(['asset_modules', mod, 'node_modules', mod, 'dist'], false)) {
-    if (!assetImport[mod].includes(arr)) assetImport[mod].push(arr);
-  }
-  fs.writeFileSync('assets.json', JSON.stringify(assetImport, null, 4));
+    if (asset == MAINMODULE) return console.log(`to get asset you have to provide a valid npm module, for example: admin-lte@^3.2`);
+    let assetImport = { packages: {} };
+    let mod = (asset.includes('@')) ? asset.split('@')[0] : asset;
+    if (fs.existsSync('assets.json')) assetImport = JSON.parse(fs.readFileSync('assets.json'));
+    let dest = path.join('asset_modules', mod);
+    if (!fs.existsSync(dest)) {
+        fs.mkdirSync(dest, { recursive: true, force: true });
+    }
+    spawnSync(NPM, ['install', asset, '---prefix', dest], SPAWNARG);
+    assetImport.packages[mod] = JSON.parse(fs.readFileSync(path.join(dest, 'package.json')));
+    if (mod == '') return console.log(`you have to manually set what to import to asset`);
+    if (!assetImport.hasOwnProperty(mod)) assetImport[mod] = [];
+    for (let arr of getRecursive(['asset_modules', mod, 'node_modules', mod, 'dist'], false)) {
+        if (!assetImport[mod].includes(arr)) assetImport[mod].push(arr);
+    }
+    fs.writeFileSync('assets.json', JSON.stringify(assetImport, null, 4));
 }
 
 const menu = () => {
-  let arg = (myArgs[1]) ? myArgs[1] : 'all';
-  let module = (fs.existsSync(path.join('asrc', arg))) ? arg : 'all';
-  parseArguments(myArgs);
-  switch (params.command) {
-    case 'serve':
-      serve(module);
-      break;
-    case 'spark':
-      spawn(PHP, myArgs, SPAWNARG);
-      break;
-    case 'ng':
-      module = (module=='all')?MAINMODULE:module;
-      SPAWNARG.cwd = path.join('asrc', module)
-      spawn(NG, myArgs.splice(2), SPAWNARG);
-      break;
-    case 'npm':
-      module = (module=='all')?MAINMODULE:module;
-      SPAWNARG.cwd = path.join('asrc', module)
-      spawn(NPM, myArgs.splice(2), SPAWNARG);
-      break;
-    case 'npx':
-      module = (module=='all')?MAINMODULE:module;
-      SPAWNARG.cwd = path.join('asrc', module)
-      spawn(NPX, myArgs.splice(2), SPAWNARG);
-      break;
-    case 'build':
-      module = (arg == 'all') ? arg : module;
-      buildForApache(module);
-      break;
-    case 'build:oth':
-      module = (arg == 'all') ? arg : module;
-      buildForOthers(module);
-      break;
-    case 'ma':
-      if (myArgs[1] !== undefined) createNewModule(arg);
-      break;
-    case 'mc':
-      if (myArgs[1] !== undefined) convertToModule(arg);
-      break;
-    case 'install':
-      installAOP();
-      break;
-    case 'copy':
-      params.copy = arg;
-      copyBuildReal();
-      break;
-    case 'assets:load':
-      loadAssets(arg);
-      break;
-    case 'hash':
-      process.stdout.write(`\n${E}The hash for ${G}${E}${myArgs[1]}${N}${E} is ${N}${Y}${E}`);
-      spawnSync(PHP, ["-r", `echo password_hash('${myArgs[1]}', PASSWORD_DEFAULT);`], SPAWNARG);
-      process.stdout.write(`${N}\n\n`);
-      break;
-    default:
-      usage();
-  }
+    let arg = (myArgs[1]) ? myArgs[1] : 'all';
+    let module = (fs.existsSync(path.join('asrc', arg))) ? arg : 'all';
+    parseArguments(myArgs);
+    switch (params.command) {
+        case 'serve':
+            serve(module);
+            break;
+        case 'spark':
+            spawn(PHP, myArgs, SPAWNARG);
+            break;
+        case 'ng':
+            module = (module == 'all') ? MAINMODULE : module;
+            SPAWNARG.cwd = path.join('asrc', module)
+            spawn(NG, myArgs.splice(2), SPAWNARG);
+            break;
+        case 'npm':
+            module = (module == 'all') ? MAINMODULE : module;
+            SPAWNARG.cwd = path.join('asrc', module)
+            spawn(NPM, myArgs.splice(2), SPAWNARG);
+            break;
+        case 'npx':
+            module = (module == 'all') ? MAINMODULE : module;
+            SPAWNARG.cwd = path.join('asrc', module)
+            spawn(NPX, myArgs.splice(2), SPAWNARG);
+            break;
+        case 'build':
+            module = (arg == 'all') ? arg : module;
+            buildForApache(module);
+            break;
+        case 'build:oth':
+            module = (arg == 'all') ? arg : module;
+            buildForOthers(module);
+            break;
+        case 'ma':
+            if (myArgs[1] !== undefined) createNewModule(arg);
+            break;
+        case 'mc':
+            if (myArgs[1] !== undefined) convertToModule(arg);
+            break;
+        case 'install':
+            installAOP();
+            break;
+        case 'copy':
+            params.copy = arg;
+            copyBuildReal();
+            break;
+        case 'assets:load':
+            loadAssets(arg);
+            break;
+        case 'hash':
+            process.stdout.write(`\n${E}The hash for ${G}${E}${myArgs[1]}${N}${E} is ${N}${Y}${E}`);
+            spawnSync(PHP, ["-r", `echo password_hash('${myArgs[1]}', PASSWORD_DEFAULT);`], SPAWNARG);
+            process.stdout.write(`${N}\n\n`);
+            break;
+        default:
+            usage();
+    }
 }
 
-let filePath = path.join(process.cwd(), 'aop');
 
 
+const getVersionOnPath = fileContent => {
+    let a = 0;
+    let filePath = path.join(process.cwd(), 'aop');
+    let fileContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
+    for (let line of fileContent.split('\n')) {
+        if (line.includes('version') && a++ < 5) {
+            let tmp = line.split('=');
+            if (tmp[1] !== undefined) {
+                let ver = parseFloat(tmp.split(';')[0].trim());
+                return (ver !== NaN)?ver:0;
+            }
+        }
+    }
+    return 0;
+}
 
 if (fs.existsSync(filePath)) {
-  const fileContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
-  let pathVersion = parseFloat(fileContent.split('\n')[1].split('=')[1].split(';')[0].trim());
-  if (pathVersion > version) {
-    let rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
-    rl.question(`${Y}${E}Detected new aop version (${pathVersion}) in this folder, would you like to update ${N}? [${G}${E}yes${N}]/${R}${E}no${N} `, ans => {
-      if (ans !== 'no') {
-        check(() => {
-          installAOP();
-          console.log(`${R}${E}Reload this script${N}`);
-          process.exit(0);
+    let pathVersion = getVersionOnPath();
+    if (pathVersion > version) {
+        let rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
         });
-      } else {
+        rl.question(`${Y}${E}Detected new aop version (${pathVersion}) in this folder, would you like to update ${N}? [${G}${E}yes${N}]/${R}${E}no${N} `, ans => {
+            if (ans !== 'no') {
+                check(() => {
+                    installAOP();
+                    console.log(`${R}${E}Reload this script${N}`);
+                    process.exit(0);
+                });
+            } else {
+                myStart();
+            }
+        });
+    } else {
         myStart();
-      }
-    });
-  } else {
-    myStart();
-  }
+    }
 }
 
 function myStart() {
-  if (myArgs.length == 0) {
-    usage();
-  } else {
-    check(menu);
-  }
+    if (myArgs.length == 0) {
+        usage();
+    } else {
+        check(menu);
+    }
 }
-
-
