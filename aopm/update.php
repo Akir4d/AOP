@@ -4,7 +4,7 @@ $H1C = '</h1>';
 $P = '<p>';
 $PC = '</p>';
 $PRE = '<script>var irr=setInterval(()=>{let el=document.getElementById("pre"); el.addEventListener("mouseover", (event) => {clearInterval(irr)}); el.scrollTop = el.scrollHeight;},10)</script><pre id="pre" style="height: 50vh; width: 100%; overflow-y:scroll">';
-$PREC = "\n\nThis page will do an auto-refresh in 10 seconds</pre>";
+$PREC = "\n\n</pre>";
 if (php_sapi_name() === 'cli') {
     $H1 = "\033[0;31m\033[1m";
     $H1C = "\033[0m\033[0m" . PHP_EOL;
@@ -172,8 +172,7 @@ if (!file_exists($composerPath . DIRECTORY_SEPARATOR . 'vendor') || !file_exists
         file_put_contents($updateFile, "done", FILE_APPEND);
     }
     if (php_sapi_name() !== 'cli') {
-        echo '<script>setTimeout(()=>parent.window.location.reload(true), 10000);</script>';
-        echo '</section></body></html>';
+        include "footer.php";
         die();
     }
 
