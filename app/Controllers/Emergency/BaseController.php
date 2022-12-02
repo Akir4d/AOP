@@ -49,12 +49,16 @@ abstract class BaseController extends Controller
         parent::initController($request, $response, $logger);
         // Preload any models, libraries, etc, here.
         // E.g.: $this->session = \Config\Services::session();
-        $this->allowCors(['http://localhost:4200', 'http://localhost:8085','http://localhost'],false);
+        $this->allowCors([], ENVIRONMENT == 'development');
     }
 
-    /**
-     * allow cors, use with prodency
-     */
+     /**
+      * A White-list for given origins 
+      *
+      * @param mixed $allowed_domains list of origins you want to white-list
+      * @param mixed $forceAll allow from ALL, DO NOT USE IN PRODUCTION!
+      * @return void
+      */
 
     protected function allowCors($allowed_domains=[], $forceAll=false)
     {
