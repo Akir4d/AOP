@@ -53,6 +53,7 @@ to use the command as eg: aop build
 Options:
 |   Option   | Alternative | Description         |
 | :---------  | :-------------- | :--------------------- |
+|...........................|..............................|.............................................................................................|
 | *-c path*   | *--copy=path* |after build command will copy the build to a folder or remote ftp server with syntax ftp://user:pass@host[ :path]|
 | *-u username* | *--username=user* |ftp username.|
 | *-p password* | *--password=pass* |ftp password.|
