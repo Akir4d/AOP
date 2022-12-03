@@ -594,8 +594,6 @@ const menu = () => {
     }
 }
 
-
-
 const getVersionOnPath = () => {
     let a = 0;
     let filePath = path.join(process.cwd(), 'aop');
