@@ -7,7 +7,12 @@ use CodeIgniter\HTTP\CLIRequest;
 use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
+use Exception;
+use Firebase\JWT\Key;
 use Psr\Log\LoggerInterface;
+use \Firebase\JWT\JWT;
+
+
 
 /**
  * Class BaseController
@@ -39,6 +44,8 @@ abstract class BaseController extends Controller
 
     protected $styles = [];
     protected $headFooter = ['head' => ['row' => [], 'auto' => []], 'footer' => ['row' => [], 'auto' => []]];
+
+    protected $jwtInformation = null;
 
     /**
      * Constructor.
@@ -281,15 +288,89 @@ abstract class BaseController extends Controller
 
     protected function replaceOnEnv($par, $value, $file)
     {
+        if (is_string($value)) {
+            $value = str_replace("'", "\'", trim($value, "'"));
+            $value = str_replace('"', '\"', trim($value, '"'));
+            $value = str_replace("\n", " ", $value);
+            $value = "'" . $value . "'";
+        }
+
+        if (is_bool($value))
+            $value = ($value) ? 'true' : 'false'; 
+        
+        
+
         $quoted = str_replace('.', '\.', $par);
         $re = '/.*?' . $quoted . '.*?\= (.*)/m';
-        $file = preg_replace($re, "$par = $value", $file);
+        $file = preg_replace($re, $par." = ".str_replace(['$'],['\$'],$value), $file);
         $re = '/' . $quoted . '.*?\= (.*)/m';
         preg_match_all($re, $file, $matches, PREG_SET_ORDER, 0);
         if (empty($matches)) {
-            $file .= "$par = $value\n";
+            $file .= "$par = ".$value."\n";
         }
         return $file;
+    }
+
+
+    /**
+     * Uncomplicated jwt Auth
+     * 
+     * @param string $user
+     * @param string $token
+     * @return object
+     */
+    protected function jwtDecode(string $token): object
+    {
+        $key = getenv('emergency.jwt.key');
+        $ret = (object)['error' => true, 'message' => '', 'decoded' => false];
+        try {
+            $ret->decoded = JWT::decode($token, new Key($key, 'HS256'));
+            $this->jwtInformation = $ret->decoded;
+        } catch (Exception $ex) {
+            $ret->decoded = false;
+            $ret->message = $ex;
+        }
+        if(!empty($ret->decoded)){
+            $ret->error = false;
+            $ret->message = "Success";
+        }
+        return $ret;
+    }
+
+
+    /**
+     * Uncomplicated jwtEncode Auth
+     * 
+     * @param array $additionalValues
+     * @param mixed $key
+     * @return string
+     */
+    protected function jwtEncode(array $additionalValues = [], $key = ''): string
+    {
+        if(empty($key)){
+            $key = getenv('emergency.jwt.key');
+            if(empty($key)){
+                $key = bin2hex(random_bytes(32));
+                file_put_contents(
+                    APPPATH . '../.env', 
+                    $this->replaceOnEnv(
+                        'emergency.jwt.key', 
+                        $key, 
+                        file_get_contents(APPPATH . '../.env')
+                    )
+                );
+            }
+        }
+        $iat = time(); // current timestamp value
+        $exp = $iat + 3600;
+ 
+        $payload = array(
+            "iat" => $iat, //Time the JWT issued at
+            "exp" => $exp, // Expiration time of token
+        );
+        $payload = array_merge($additionalValues, $payload);
+         
+        return JWT::encode($payload, $key, 'HS256');
     }
 
 }

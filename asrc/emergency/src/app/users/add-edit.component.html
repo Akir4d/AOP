@@ -1,44 +1,54 @@
-﻿<div class="p-4">
-  <p-card header="{{title}}">
+﻿<div class="col-12 md:col-9 xl:col-4">
+  <p-card header="AOP User">
     <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="onSubmit()">
-      <div class="field m-2 px-5 py-3">
-        <span class="p-float-label">
-          <input type="text" pInputText formControlName="firstName" class="form-control"
-            [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }" />
-          <label for="float-input">First Name</label>
-          <small *ngIf="submitted && f.username.errors" class="p-error block">First Name is required</small>
-        </span>
+      <div class="grid">
+        <div class="col-12 md:col-6">
+          <div class="field py-2">
+            <span class="p-float-label">
+              <input type="text" pInputText formControlName="firstName" class="w-full"
+                [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }" />
+              <label for="float-input">First Name</label>
+              <small *ngIf="submitted && f.username.errors" class="p-error block">First Name is required</small>
+            </span>
+          </div>
+        </div>
+        <div class="col-12 md:col-6">
+          <div class="field py-2">
+            <span class="p-float-label">
+              <input type="text" pInputText formControlName="lastName" class="w-full"
+                [ngClass]="{ 'is-invalid': submitted && f.lastName.errors }" />
+              <label for="form-label">Last Name</label>
+              <small *ngIf="submitted && f.lastName.errors?.required">Last Name is required</small>
+            </span>
+          </div>
+        </div>
+        <div class="col-12 md:col-6">
+          <div class="field py-2">
+            <span class="p-float-label">
+              <input type="text" pInputText formControlName="username" class="w-full"
+                [ngClass]="{ 'is-invalid': submitted && f.username.errors }" />
+              <label for="form-label">Username</label>
+              <small *ngIf="submitted && f.username.errors?.required">Username is required</small>
+            </span>
+          </div>
+        </div>
+        <div class="col-12 md:col-6">
+          <div class="field py-2">
+            <span class="p-float-label">
+              <input type="password" pInputText formControlName="password" class="w-full"
+                [ngClass]="{ 'is-invalid': submitted && f.password.errors }" />
+              <label class="form-label">Password</label>
+              <small *ngIf="submitted && f.password.errors?.required">Password is required</small>
+              <small *ngIf="submitted && f.password.errors?.minlength">Password must be at least 6 characters</small>
+            </span>
+          </div>
+        </div>
       </div>
-      <div class="field m-2 px-5 py-3">
-        <span class="p-float-label">
-          <input type="text" pInputText formControlName="lastName" class="form-control"
-            [ngClass]="{ 'is-invalid': submitted && f.lastName.errors }" />
-          <label for="form-label">Last Name</label>
-          <small *ngIf="submitted && f.lastName.errors?.required">Last Name is required</small>
-        </span>
-      </div>
-      <div class="field m-2 px-5 py-3">
-        <span class="p-float-label">
-          <input type="text" pInputText formControlName="username" class="form-control"
-            [ngClass]="{ 'is-invalid': submitted && f.username.errors }" />
-          <label for="form-label">Username</label>
-          <small *ngIf="submitted && f.username.errors?.required">Username is required</small>
-        </span>
-      </div>
-      <div class="field m-2 px-5 py-3">
-        <span class="p-float-label">
-          <input type="password" pInputText formControlName="password" class="form-control"
-            [ngClass]="{ 'is-invalid': submitted && f.password.errors }" />
-          <label class="form-label">Password</label>
-          <small *ngIf="submitted && f.password.errors?.required">Password is required</small>
-          <small *ngIf="submitted && f.password.errors?.minlength">Password must be at least 6 characters</small>
-        </span>
-      </div>
-      <div class="flex flex-row flex-wrap card-container">
-        <button pButton type="button" routerLink="/" class="ml-2 p-button-secondary">Cancel</button>
-        <button pButton="submitting" class="ml-2"><i *ngIf="submitting" class="pi pi-spin pi-spinner"> </i>
+      <div class="flex flex-row-reverse">
+        <button pButton="submitting" class="m-1"><i *ngIf="submitting" class="pi pi-spin pi-spinner"> </i>
           Save
         </button>
+        <button pButton type="button" routerLink="/" class="m-1 p-button-secondary">Cancel</button>
       </div>
     </form>
   </p-card>

@@ -3,7 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first } from 'rxjs/operators';
 
-import { AccountService, AlertService } from '@app/_services';
+import { AccountService } from '@app/_services';
 
 @Component({ templateUrl: 'add-edit.component.html' })
 export class AddEditComponent implements OnInit {
@@ -18,8 +18,7 @@ export class AddEditComponent implements OnInit {
         private formBuilder: FormBuilder,
         private route: ActivatedRoute,
         private router: Router,
-        private accountService: AccountService,
-        private alertService: AlertService
+        private accountService: AccountService
     ) { }
 
     ngOnInit() {
@@ -33,8 +32,6 @@ export class AddEditComponent implements OnInit {
             // password only required in add mode
             password: ['', [Validators.minLength(6), ...(!this.id ? [Validators.required] : [])]]
         });
-
-        this.title = 'Edit Admin';
     }
 
     // convenience getter for easy access to form fields
@@ -42,9 +39,6 @@ export class AddEditComponent implements OnInit {
 
     onSubmit() {
         this.submitted = true;
-
-        // reset alerts on submit
-        this.alertService.clear();
 
         // stop here if form is invalid
         if (this.form.invalid) {
@@ -56,11 +50,11 @@ export class AddEditComponent implements OnInit {
             .pipe(first())
             .subscribe({
                 next: () => {
-                    this.alertService.success('User saved', { keepAfterRouteChange: true });
                     this.router.navigateByUrl('/users');
+                    this.submitting = false;
                 },
                 error: error => {
-                    this.alertService.error(error);
+                    //this.alertService.error(error);
                     this.submitting = false;
                 }
             })
@@ -68,6 +62,6 @@ export class AddEditComponent implements OnInit {
 
     private saveUser() {
         // create or update user based on id param
-        return this.accountService.update(this.id!, this.form.value)
+        return this.accountService.update(this.form.value)
     }
 }

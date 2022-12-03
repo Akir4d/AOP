@@ -1,10 +1,10 @@
 ﻿<div class="min-h-screen flex surface-ground">
   <div id="app-sidebar-1"
     class="surface-section h-screen hidden lg:block flex-shrink-0 fixed lg:sticky left-0 top-0 z-1 border-right-1 surface-border select-none"
-    style="width:280px">
+    style="max-width:280px">
     <div class="flex flex-column h-full">
-      <div class="flex align-items-center px-5 flex-shrink-0" style="height:60px">
-        <img src="assets/emergency/logo.png" alt="Image" height="60">
+      <div class="flex align-items-center" style="max-height:60px">
+        <img src="assets/emergency/logo.png" alt="Image" width="100%">
       </div>
       <div class="overflow-y-auto">
         <ul class="list-none p-3 m-0">
@@ -47,13 +47,13 @@
     <div
       class="flex justify-content-between align-items-center px-5 surface-0 border-bottom-1 surface-border relative lg:static"
       style="height:60px">
-      <div class="flex">
+      <div  class="flex">
         <a pRipple class="cursor-pointer inline-flex align-items-center justify-content-center lg:hidden text-700 mr-3"
           pStyleClass="#app-sidebar-1" enterClass="hidden" enterActiveClass="fadeinleft" leaveToClass="hidden"
           leaveActiveClass="fadeoutleft" [hideOnOutsideClick]="true">
           <i class="pi pi-bars text-4xl"></i>
         </a>
-        <span class="p-input-icon-left">
+        <span *ngIf="false" class="p-input-icon-left">
           <i class="pi pi-search"></i>
           <input type="text" pInputText class="border-none w-10rem sm:w-20rem" placeholder="Search">
         </span>
@@ -81,11 +81,9 @@
         </li>
       </ul>
     </div>
-    <div class="p-5 flex flex-column flex-auto">
-      <div class="border-2 border-dashed surface-border border-round surface-section flex-auto">
-        <router-outlet></router-outlet>
+    <div class="p-5 bg-primary flex-auto grid-nogutter">
         <!-- main app container -->
-      </div>
+        <router-outlet></router-outlet>
     </div>
   </div>
 </div>

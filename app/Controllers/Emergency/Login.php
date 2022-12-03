@@ -11,25 +11,22 @@ class Login extends BaseController
 
     public function index()
     {
-        $session = \Config\Services::session();
-        if ($session->uuid == null) {
-            $session->uuid = Uuid::uuid4()->toString();
-        }
-
-        $aop = new \Config\Aop();
+ 
+        $log = new \Config\Emergency\Emergency();
         if ($json = $this->request->getJSON()) {
             $keys = array_keys((array) $json);
             foreach ($keys as $key) {
                 switch ($key) {
                     case 'username':
-                        if (password_verify($json->username, $aop->emergency['username']) && password_verify($json->password, $aop->emergency['password'])) {
+                        if (password_verify($json->username, $log->login['username']) && password_verify($json->password, $log->login['password'])) {
                             return $this->renderJson([
                                 'id' => 1,
                                 'username' => $json->username,
                                 'password' => '********',
-                                'firstName' => 'Emergency',
-                                'lastName' => 'User',
-                                'token' => $session->uuid]);
+                                'firstName' => $log->login['firstname'],
+                                'lastName' => $log->login['lastname'],
+                                'other' => $log->login['username'],
+                                'token' => $this->jwtEncode(['username' => $json->username])]);
                         }
                         break;
                 }

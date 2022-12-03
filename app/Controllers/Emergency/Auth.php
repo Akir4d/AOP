@@ -25,20 +25,21 @@ abstract class Auth extends BaseController
 
     private function authBearer()
     {
-        $test = explode(' ', $this->request->getServer("HTTP_AUTHORIZATION"));
-        $uuid = "";
-        if ($test[0] = "Bearer") {
-            $session = \Config\Services::session();
-            if ($session->uuid == null) {
-                $session->uuid = Uuid::uuid4()->toString();
-            }
-            $uuid = $test[1];
-            if ($session->uuid !== $uuid) {
-                header("Content-Type: application/json");
-                http_response_code(ResponseInterface::HTTP_UNAUTHORIZED);
-                echo json_encode(['status' => 'forbidden'], );
-                die();
-            }
+        $inp = $this->request->getServer("HTTP_AUTHORIZATION");
+        $spr = ($inp == null) ? ' ' : $inp;
+        $test = explode(' ', $spr);
+        $error = false;
+        if ($test[0] == "Bearer") {
+            if (array_key_exists(1, $test) && $this->jwtDecode($test[1])->error)
+                $error = "Token Invalid";
+        } else {
+            $error = "no credentials";
+        }
+        if($error !== false) {
+            header("Content-Type: application/json");
+            http_response_code(ResponseInterface::HTTP_UNAUTHORIZED);
+            echo json_encode(['status' => $error, 'debug'=>$inp], );
+            die();
         }
     }
 

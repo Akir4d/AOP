@@ -14,9 +14,5 @@ class Aop extends BaseConfig
      *
      * @var array
      */
-    public $emergency = [
-        'username' => '$2y$10$6EWtXD0zgVea4w7Is4K80OUhcwgb5fWz6BqCzYJUcUuzTMEYxWVfK', //admin
-        'password' => '$2y$10$zgSqKhQ73fkINdN88X7FKeEVM4O2wXfNJGsBXLlGHAzFEjcc8JViu' //admin
-    ];
 
 }
