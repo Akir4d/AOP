@@ -27,13 +27,13 @@
                 <a pRipple
                   class="flex align-items-center cursor-pointer p-3 border-round text-700 hover:surface-100 transition-duration-150 transition-colors">
                   <i class="pi pi-user mr-2"></i>
-                  <span class="font-medium" routerLink="/users">Account Access</span>
+                  <span class="font-medium" routerLink="/users">Emergency Access</span>
                 </a>
               </li>
               <li>
                 <a pRipple (click)="logout()"
                   class="flex align-items-center cursor-pointer p-3 border-round text-700 hover:surface-100 transition-duration-150 transition-colors">
-                  <i class="pi pi-cog mr-2"></i>
+                  <i class="pi pi-sign-out mr-2"></i>
                   <span class="font-medium">Logout</span>
                 </a>
               </li>
@@ -83,21 +83,8 @@
     </div>
     <div class="p-5 flex flex-column flex-auto">
       <div class="border-2 border-dashed surface-border border-round surface-section flex-auto">
-        <!-- nav -->
-        <nav class="navbar navbar-expand navbar-dark bg-dark px-3" *ngIf="user">
-          <div class="navbar-nav">
-            <a class="nav-item nav-link" routerLink="/" routerLinkActive="active"
-              [routerLinkActiveOptions]="{exact: true}">Home</a>
-            <a class="nav-item nav-link" routerLink="/users" routerLinkActive="active">Admin</a>
-            <button class="btn btn-link nav-item nav-link" (click)="logout()">Logout</button>
-          </div>
-        </nav>
-
+        <router-outlet></router-outlet>
         <!-- main app container -->
-        <div class="app-container" [ngClass]="{ 'bg-light': user }">
-          <alert></alert>
-          <router-outlet></router-outlet>
-        </div>
       </div>
     </div>
   </div>
