@@ -1,11 +1,7 @@
-/* You can add global styles to this file, and also import other style files */
-.app-container {
-    min-height: 320px;
-    overflow: hidden;
-}
+@import "primeflex/primeflex.css";
 
-.btn-delete-user {
-    width: 40px;
-    text-align: center;
-    box-sizing: content-box;
+body {
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

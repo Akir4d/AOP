@@ -17,7 +17,7 @@ class Aop extends BaseController
             }
             $uuid = $test[1];
             if ($session->uuid !== $uuid) {
-                redirect()->to(base_url('emergency/aop/account/login'));
+                redirect()->to(base_url('emergency/aop/login'));
             }
         } 
     }
