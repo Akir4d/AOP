@@ -7,7 +7,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { JwtInterceptor, ErrorInterceptor } from './_helpers';
 import { AppComponent } from './app.component';
 import { AlertComponent } from './_components';
-import { HomeComponent } from './home';
 import {AccordionModule} from 'primeng/accordion';
 import {CardModule} from 'primeng/card';
 import {InputTextModule} from 'primeng/inputtext';
@@ -28,8 +27,7 @@ import {ButtonModule} from 'primeng/button';
     ],
     declarations: [
         AppComponent,
-        AlertComponent,
-        HomeComponent
+        AlertComponent
     ],
     providers: [
         { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },

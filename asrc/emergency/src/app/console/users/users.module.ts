@@ -3,7 +3,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 import { UsersRoutingModule } from './users-routing.module';
-import { AddEditComponent } from './add-edit.component';
+import { AdminComponent } from './admin/admin.component';
 import {AccordionModule} from 'primeng/accordion';
 import {CardModule} from 'primeng/card';
 import {InputTextModule} from 'primeng/inputtext';
@@ -22,7 +22,7 @@ import {ButtonModule} from 'primeng/button';
         ButtonModule
     ],
     declarations: [
-        AddEditComponent
+        AdminComponent
     ]
 })
 export class UsersModule { }

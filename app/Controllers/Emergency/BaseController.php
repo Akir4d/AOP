@@ -321,8 +321,13 @@ abstract class BaseController extends Controller
      */
     protected function jwtDecode(string $token): object
     {
-        $key = getenv('emergency.jwt.key');
+        
         $ret = (object)['error' => true, 'message' => '', 'decoded' => false];
+        $key = getenv('emergency.jwt.key');
+        if (empty($key)) {
+            $ret->message = "no Jvt Key";
+            return $ret;
+        }
         try {
             $ret->decoded = JWT::decode($token, new Key($key, 'HS256'));
             $this->jwtInformation = $ret->decoded;

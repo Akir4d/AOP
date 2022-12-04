@@ -1,4 +1,4 @@
-﻿<div class="col-12 md:col-9 xl:col-4">
+<div class="col-12 md:col-9 xl:col-4">
   <p-card header="AOP User">
     <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="onSubmit()">
       <div class="grid">
@@ -48,8 +48,9 @@
         <button pButton="submitting" class="m-1"><i *ngIf="submitting" class="pi pi-spin pi-spinner"> </i>
           Save
         </button>
-        <button pButton type="button" routerLink="/" class="m-1 p-button-secondary">Cancel</button>
+        <button pButton="button" routerLink="/" class="m-1 p-button-secondary">Cancel</button>
       </div>
     </form>
   </p-card>
 </div>
+
