@@ -35,6 +35,12 @@ class Login extends BaseController
         }
     }
 
+    public function checks(){
+        $ret[] = $this->checkDb();
+        $ret[] = $this->checkCredentials();
+        return $this->renderJson($ret);
+    }
+
     public function test(){
         echo '<pre>', var_dump($_SERVER), '</pre>';
     }

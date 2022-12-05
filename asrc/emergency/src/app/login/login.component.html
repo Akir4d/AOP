@@ -1,37 +1,43 @@
-﻿<div class="fixed w-screen bg-teal-900 left-0 top-0 h-100">
-  <div class="grid grid-nogutter text-800">
-    <div class="col-6 hidden md:flex overflow-hidden">
+﻿<div class="fixed w-full h-full {{messages.length?'bg-red-700':'bg-teal-900'}} top-0 left-0">
+  <div class="grid">
+    <div class="col-6 hidden md:flex">
       <img src="assets/emergency/loginhelper.png" alt="Image" class="md:mr-auto block md:h-full"
         style="max-height: 100vh;clip-path: polygon(0 0, 86% 0%, 100% 100%, 0 100%)">
     </div>
     <div class="col-12 md:col-6 text-center pl-8 flex align-items-center">
-      <p-card header="AOP Emergency Console" subheader="Login with .env credentials">
-        <form [formGroup]="form" (ngSubmit)="onSubmit()">
-          <div class="field m-2 px-5 py-3">
-            <span class="p-float-label">
-              <input type="text" pInputText formControlName="username" class="form-control"
-                [ngClass]="{ 'is-invalid': submitted && f.username.errors }">
-              <label for="float-input">Username</label>
-              <small *ngIf="submitted && f.username.errors" class="p-error block">Username is required</small>
-            </span>
-          </div>
-          <div class="field m-2 px-5 py-3">
-            <span class="p-float-label">
-              <input type="password" pInputText formControlName="password" class="form-control"
-                [ngClass]="{ 'is-invalid': submitted && f.password.errors }" />
-              <label class="form-label">Password</label>
-              <small *ngIf="submitted && f.password.errors" class="invalid-feedback">Password is required</small>
-            </span>
-          </div>
-          <p-footer>
-            <div class="flex flex-row-reverse flex-wrap card-container">
-              <button pButton [disabled]="loading" label="Login">
-                <i *ngIf="loading" class="pi pi-spin pi-spinner"> </i>
-              </button>
+      <div clss="grid">
+        <p-card header="AOP Emergency Console" subheader="Login with .env credentials" styleClass="mb-2 mt-2">
+          <form [formGroup]="form" (ngSubmit)="onSubmit()">
+            <div class="field m-2 py-3">
+              <span class="p-float-label">
+                <input type="text" pInputText formControlName="username" class="w-full"
+                  [ngClass]="{ 'is-invalid': submitted && f.username.errors }">
+                <label for="float-input">Username</label>
+                <small *ngIf="submitted && f.username.errors" class="p-error block">Username is required</small>
+              </span>
             </div>
-          </p-footer>
-        </form>
-      </p-card>
+            <div class="field m-2 py-3">
+              <span class="p-float-label">
+                <input type="password" pInputText formControlName="password" class="w-full"
+                  [ngClass]="{ 'is-invalid': submitted && f.password.errors }" />
+                <label class="form-label">Password</label>
+                <small *ngIf="submitted && f.password.errors" class="invalid-feedback">Password is required</small>
+              </span>
+            </div>
+              <div class="flex flex-row-reverse flex-wrap card-container mb-0 pb-0">
+                <button pButton [disabled]="loading" label="Login">
+                  <i *ngIf="loading" class="pi pi-spin pi-spinner"> </i>
+                </button>
+              </div>
+          </form>
+        </p-card>
+        <p-card *ngIf="messages.length" styleClass="bg-red-800 text-white">
+          Login console to fix:
+          <div *ngFor="let message of messages" class="mb-2 mt-2">
+            <p-message severity="error" text="{{message.message}}" styleClass="w-full"></p-message>
+          </div>
+        </p-card>
+      </div>
     </div>
 
   </div>

@@ -1,9 +1,8 @@
 <?php
 
 namespace App\Controllers\Emergency;
-use CodeIgniter\HTTP\ResponseInterface;
 
-class Checks extends Auth
+class Checks extends BaseController
 {
 
     public function index()
@@ -11,12 +10,9 @@ class Checks extends Auth
         //
     }
 
-    public function credentials(){
-        $log = new \Config\Emergency\Emergency();
-        if (password_verify('admin', $log->login['password'])) {
-            return $this->renderJson(['status' => 'Change default credentials', 'error' => true], ResponseInterface::HTTP_UNAUTHORIZED);
-        } else {
-            return $this->renderJson(['status' => 'Ok', 'error' => false]);
-        }
+    public function getDbConfig(){
+        $dbc = new \Config\Database();
+        return $this->renderJson((array) $dbc->default);
     }
+
 }

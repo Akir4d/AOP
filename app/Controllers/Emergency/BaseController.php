@@ -154,6 +154,22 @@ abstract class BaseController extends Controller
         return $status;
     }
 
+    protected function checkCredentials(){
+        $status = (object) ['message' => '', 'error' => false, 'debug' => ''];
+        $log = new \Config\Emergency\Emergency();
+        if(strpos($log->login['password'], 'hash goes here')!==false){
+            $status->message = "Login is disabled, check the .env file";
+            $status->error = true;
+            return $status;
+        } 
+
+        if (password_verify('admin', $log->login['password'])) {
+            $status->message = "Emergency console password is set to default Admin, change it!";
+            $status->error = true;
+        }
+        return $status;
+    }
+
     protected function renderJson(
         array $responseBody,
         int $code = ResponseInterface::HTTP_OK

@@ -5,7 +5,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 
-import { User } from '@app/_models';
+import { User, MessagesJs } from '@app/_dtos';
 
 @Injectable({ providedIn: 'root' })
 export class AccountService {
@@ -26,16 +26,6 @@ export class AccountService {
     return this.userSubject.value;
   }
 
-  ngOnInit() {
-    let user: User = JSON.parse(String(localStorage.getItem('user')));
-
-    const headers = new HttpHeaders({
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${user?.token}`
-      });
-      this.requestOptions = { headers: headers };
-  }
-
   login(username: string, password: string) {
     return this.http.post<User>(`${document.getElementsByTagName("base")[0].dataset?.api}/login`, { username, password })
       .pipe(map(user => {
@@ -43,6 +33,14 @@ export class AccountService {
         localStorage.setItem('user', JSON.stringify(user));
         this.userSubject.next(user);
         return user;
+      }));
+  }
+
+
+  loginChecks() {
+    return this.http.post<MessagesJs[]>(`${document.getElementsByTagName("base")[0].dataset?.api}/login/checks`, {})
+      .pipe(map(r => {
+        return r.filter(e=>e.error == true);
       }));
   }
 
@@ -54,7 +52,6 @@ export class AccountService {
   }
 
   update(params: any) {
-    this.ngOnInit();
     return this.http.post(`${document.getElementsByTagName("base")[0].dataset?.api}/users/adminUser`, params, this.requestOptions)
       .pipe(map(x => {
         // update local storage

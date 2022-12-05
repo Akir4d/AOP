@@ -1,5 +1,6 @@
-﻿import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+﻿import { MessagesJs } from '../_dtos/messagesjs';
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first } from 'rxjs/operators';
 
@@ -10,10 +11,10 @@ export class LoginComponent implements OnInit {
     form!: FormGroup;
     loading = false;
     submitted = false;
+    messages!: MessagesJs[];
 
     constructor(
         private formBuilder: FormBuilder,
-        private route: ActivatedRoute,
         private router: Router,
         private accountService: AccountService,
         private alertService: AlertService
@@ -24,6 +25,11 @@ export class LoginComponent implements OnInit {
             username: ['', Validators.required],
             password: ['', Validators.required]
         });
+        this.accountService.loginChecks().subscribe({
+            next: e=>{
+                this.messages = e
+            }
+        })
     }
 
     // convenience getter for easy access to form fields

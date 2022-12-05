@@ -12,6 +12,8 @@ import {CardModule} from 'primeng/card';
 import {InputTextModule} from 'primeng/inputtext';
 import {StyleClassModule} from 'primeng/styleclass';
 import {ButtonModule} from 'primeng/button';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {MenuItem} from 'primeng/api';  
 
 @NgModule({
     imports: [
@@ -23,7 +25,8 @@ import {ButtonModule} from 'primeng/button';
         CardModule,
         InputTextModule,
         StyleClassModule,
-        ButtonModule
+        ButtonModule,
+        BrowserAnimationsModule
     ],
     declarations: [
         AppComponent,
