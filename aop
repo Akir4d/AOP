@@ -457,7 +457,7 @@ const copyBuildReal = u => {
 
 const installAOP = e => {
     if (!fs.existsSync('.env')) copyFileSync(path.join('envs', 'development.env'), '.env');
-    let nodePath = path.normalize(path.join(NG, '..'));
+    let nodePath = path.normalize(path.join(NG.replace(/"/, ''), '..'));
     copyFileSync(path.join('aop'), nodePath, { overwrite: true | false });
     if (process.platform.startsWith('win')) {
         fs.writeFileSync(path.join(nodePath, 'aop.cmd'), `@ECHO off
