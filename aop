@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const version = 0.32;
+const version = 0.33;
 const { exec, spawn, spawnSync, execSync } = require("child_process");
 const console = require("console");
 const fs = require('fs');
@@ -265,20 +265,20 @@ const copyInsideSourceRecursiveSync = (source, target, show = false) => {
 
 const usage = u => {
     console.log(`\n${R}${E}usage${N}: node aop [Command] [ARG]\n\nCommands:
-    ${G}${E}serve${N} \t- starts ${E}Angular${N} and ${E}Codeigniter${N} develop serve at ${Y}${E}http://localhost:4200${N} and ${Y}${E}http://localhost:8085${N},\n\t \t  you can serve also a different module as comment for example: aop serve emergency or aop emergency serve\n
-    ${G}${E}spark${N} \t- starts ${E}Codeigniter${N} spark utility\n
-    ${G}${E}composer${N} \t- starts ${E}Composer${N} php utility\n
-    ${G}${E}ng${N}    \t- calls ${E}Angular${N} ng utility, you can start also use it to a different module for example: aop ng emergency ... or aop emergency ng ....
-    ${G}${E}npm${N}    \t- calls ${E}Angular${N} npm utility, you can start also use it to a different module for example: aop npm emergency ... or aop emergency npm ....
-    ${G}${E}npx${N}    \t- calls ${E}Angular${N} npx utility, you can start also use it to a different module for example: aop npx emergency ... or aop emergency npx ....\n
-    ${G}${E}ma${N}    \t- make an ${E}Angular${N} module to load with utility aopRender inside controller
-    ${G}${E}mc${N}    \t- convert an existing ${E}Angular${N} project inside asrc to module to load with utility aopRender inside controller\n
-    ${G}${E}build${N} \t- builds a complete plug and play package on ${Y}${E}build/${N} folder, you can build also 1 module instead all them, for example: aop build emergency
-    ${G}${E}build:oth${N}\t- for all servers that do not support ".htaccess" this produces a complete plug-and-play package \n\t \t  on the build folder, for security reasons, "public" is the only sub-folder you have to share,\n\t \t  you can build also 1 module instead all them, for example: aop build emergency\n
-    ${G}${E}copy${N}\t- copy your build to a folder or remote ftp server with syntax ${Y}${E}ftp://user:pass@host[:path]${N}\n
-    ${G}${E}install${N}\t- installs aop on system
+    ${G}${E}serve${N} \t- begins the development serve for ${E}Angular${N} and ${E}Codeigniter${N} at ${Y}${E}http://localhost:4200${N} and ${Y}${E}http://localhost:8085${N},\n\t \t  You might alternatively use a separate module to serve as a comment, for instance: aop emergency serve or aop serve emergency\n
+    ${G}${E}spark${N} \t- launches the ${E}Codeigniter${N} spark utility\n
+    ${G}${E}composer${N} \t- launches the ${E}Composer${N} PHP tool\n
+    ${G}${E}ng${N}    \t- invokes the ${E}Angular${N} ng utility, and you may also begin using it with a different module, such as aop ng emergency... or aop emergency ng ... for example.
+    ${G}${E}npm${N}    \t- invokes the ${E}Angular${N} npm utility, and you may alternatively start using it with a different module, such as aop npm emergency... or aop emergency npm... for example.
+    ${G}${E}npx${N}    \t- invokes the ${E}Angular${N} npx utility, and you may also start using it with a different module, such as aop npx emergency... or aop emergency npx... for example.\n
+    ${G}${E}ma${N}    \t- creates an ${E}Angular${N} which can then be loaded into controller using the method aopRender.
+    ${G}${E}mc${N}    \t- will convert an existing ${E}Angular${N} project inside of asrc to a module, which can then be loaded into controller using the method aopRender.\n
+    ${G}${E}build${N} \t- generates a full plug-and-play package in the ${Y}${E}build/${N} folder; but, if you choose, \n\t \t you may generate only one module instead of all of them. For instance: aop build emergency
+    ${G}${E}build:oth${N}\t- generates a complete plug-and-play package on the build folder for all servers \n\t \t that do not support ".htaccess." For reasons of safety, the "public" subfolder is the \n\t \t only one that must be shared; alternatively, you can build just one module rather than all of them. Here is an example of what this might look like: aop build emergency\n
+    ${G}${E}copy${N}\t- will copy your build to a remote ftp server or a folder using the following syntax:  ${Y}${E}ftp://user:pass@host[:path]${N}\n
+    ${G}${E}install${N}\t- will install aop as a command inside the system
     \n\nOptions:
-    ${G}${E}-c\t${N} path\t\tor ${G}${E}--copy=path${N}\t\tafter build command will copy the build to a folder or remote ftp server with syntax ${Y}${E}ftp://user:pass@host[:path]${N}
+    ${G}${E}-c\t${N} path\t\tor ${G}${E}--copy=path${N}\t\tFollowing the completion of the build, this command will transfer the build to a specified folder or an external FTP server using the syntax ${Y}${E}ftp://user:pass@host[:path]${N}
     ${G}${E}-fp\t${N} port\t\tor ${G}${E}--ftp-port=port${N}\tchange the default ftp port.
     ${G}${E}-u\t${N} username\tor ${G}${E}--username=username${N}\tftp username.
     ${G}${E}-p\t${N} password\tor ${G}${E}--password=password${N}\tftp password.\n\nversion: ${version}
@@ -292,7 +292,7 @@ const check = f => {
             console.log(`${R}${E}error:${N}${E} unable to find npm executable${N}`);
             return;
         } else {
-            NPM = stdout.split("\n")[0].trim().replace(/ /g, '" "');
+            NPM = fixPath(stdout.split("\n")[0].trim());
             NPX = execSync(WHICH + ' npx').toString();
             if (!fs.existsSync('node_modules')) {
                    spawnSync(NPM, ['install', '--legacy-peer-deps'], SPAWNARG); 
@@ -302,7 +302,7 @@ const check = f => {
                     console.log(`${R}${E}error:${N}${E} unable to find php executable${N}`);
                     return;
                 } else {
-                    PHP = stdout.split("\n")[0].trim().replace(/ /g, '" "');
+                    PHP = fixPath(stdout.split("\n")[0].trim());
                     exec(WHICH + ' ng', (error, stdout) => {
                         if (error) {
                             console.log(`${G}${E}Installing missed ng command:${N}`);
@@ -310,7 +310,7 @@ const check = f => {
                             npmprecess.on('exit', () => check(f));
                             return;
                         } else {
-                            NG = stdout.split("\n")[0].trim().replace(/ /g, '" "');
+                            NG = fixPath(stdout.split("\n")[0].trim());
                             f();
                         }
                     });
@@ -334,6 +334,14 @@ const serve = (module) => {
         angular.kill;
         codeigniter.kill;
     });
+}
+
+const fixPath = e =>{
+    if (process.platform.startsWith('win')){
+        return '"'+e+'"';
+    } else {
+        return e.replace(/ /g, '\ ');
+    }
 }
 
 const buildAngular = e => {
@@ -450,7 +458,7 @@ const copyBuildReal = u => {
 const installAOP = e => {
     if (!fs.existsSync('.env')) copyFileSync(path.join('envs', 'development.env'), '.env');
     let nodePath = path.normalize(path.join(NG, '..'));
-    copyFileSync('aop', nodePath, { overwrite: true | false });
+    copyFileSync(path.join('aop'), nodePath, { overwrite: true | false });
     if (process.platform.startsWith('win')) {
         fs.writeFileSync(path.join(nodePath, 'aop.cmd'), `@ECHO off
     GOTO start
@@ -469,7 +477,6 @@ const installAOP = e => {
     )
     
     endLocal & goto #_undefined_# 2>NUL || title %COMSPEC% & "%_prog%"  "%dp0%\\aop" %*`);
-        copyFileSync('aop.cmd', nodePath);
     } else {
         fs.chmodSync(path.join(nodePath, 'aop'), '755');
     }

@@ -37,13 +37,13 @@ to use the command as eg: aop build
 
 |Command| Description |
 |-------|--------------------|
-|serve|This begins the development server for Angular and Codeigniter at http://localhost:4200 and http://localhost:8085. You might alternatively use a separate module to serve as a comment, for instance: emergency aop serve or aop serve in the event of an emergency| 
+|serve|This begins the development server for Angular and Codeigniter at http://localhost:4200 and http://localhost:8085. You might alternatively use a separate module to serve as a comment, for instance: aop emergency serve or aop serve emergency | 
 |spark|This launches the Codeigniter spark utility|
 |composer|This launches the Composer PHP tool.|
 |ng   | This invokes the Angular ng utility, and you may also begin using it with a different module, such as aop ng emergency... or aop emergency ng ... for example.|
 |npm  | This invokes the Angular npm utility, and you may alternatively start using it with a different module, such as aop npm emergency... or aop emergency npm... for example.|
 |npx  | This invokes the Angular npx utility, and you may also start using it with a different module, such as aop npx emergency... or aop emergency npx... for example.|
-|ma  | This creates an Angular module that will load the method aopRender inside of the controller.|
+|ma  | This creates an Angular module which can then be loaded into controller using the method aopRender.|
 |mc  | This will convert an existing Angular project inside of asrc to a module, which can then be loaded into controller using the method aopRender.|
 |build| This generates a full plug-and-play package in the build folder; but, if you choose, you may generate only one module instead of all of them. For instance: aop build emergency|
 |build:others|This generates a complete plug-and-play package on the build folder for all servers that do not support ".htaccess." For reasons of safety, the "public" subfolder is the only one that must be shared; alternatively, you can build just one module rather than all of them. Here is an example of what this might look like: aop build emergency|
