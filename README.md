@@ -37,24 +37,25 @@ to use the command as eg: aop build
 
 |Command| Description |
 |-------|--------------------|
-|serve|starts Angular and Codeigniter develop serve at http://localhost:4200 and http://localhost:8085 you can serve also a different module as comment for example: aop serve emergency| 
-|spark|starts Codeigniter spark utility|
-|ng   | calls  Angular ng utility, you can start also use it to a different module for example: aop ng emergency ...args|
-|npm  | calls  Angular ng utility, you can start also use it to a different module for example: aop npm emergency ...args|
-|npx  | calls  Angular ng utility, you can start also use it to a different module for example: aop npx emergency ...args|
-|ma  | make an Angular module to load with utility aopRender inside controller|
-|mc  | convert an existing Angular project inside asrc to module to load with utility aopRender inside controller|
-|build| builds a complete plug and play package on build/ folder, you can build also 1 module instead all them, for example: aop build emergency|
-|build:others|for all servers that do not support ".htaccess" this produces a complete plug-and-play package on the build folder, for security reasons, "public" is the only sub-folder you have to share, you can build also 1 module instead all them, for example: aop build emergency|
-|copy|copy your build to a folder or remote ftp server with syntax ftp://user:pass@host[ :path]|
-|install|will install aop as command|
+|serve|This begins the development server for Angular and Codeigniter at http://localhost:4200 and http://localhost:8085. You might alternatively use a separate module to serve as a comment, for instance: emergency aop serve or aop serve in the event of an emergency| 
+|spark|This launches the Codeigniter spark utility|
+|composer|This launches the Composer PHP tool.|
+|ng   | This invokes the Angular ng utility, and you may also begin using it with a different module, such as aop ng emergency... or aop emergency ng ... for example.|
+|npm  | This invokes the Angular npm utility, and you may alternatively start using it with a different module, such as aop npm emergency... or aop emergency npm... for example.|
+|npx  | This invokes the Angular npx utility, and you may also start using it with a different module, such as aop npx emergency... or aop emergency npx... for example.|
+|ma  | This creates an Angular module that will load the method aopRender inside of the controller.|
+|mc  | This will convert an existing Angular project inside of asrc to a module, which can then be loaded into controller using the method aopRender.|
+|build| This generates a full plug-and-play package in the build folder; but, if you choose, you may generate only one module instead of all of them. For instance: aop build emergency|
+|build:others|This generates a complete plug-and-play package on the build folder for all servers that do not support ".htaccess." For reasons of safety, the "public" subfolder is the only one that must be shared; alternatively, you can build just one module rather than all of them. Here is an example of what this might look like: aop build emergency|
+|copy|This will copy your build to a remote ftp server or a folder using the following syntax: ftp: /user:pass@host[:path]|
+|install|This will install aop as a command inside the system.|
 
 
 Options:
 |   Option   | Alternative | Description         |
 | :---------  | :-------------- | :--------------------- |
 |...........................|..............................|.............................................................................................|
-| *-c path*   | *--copy=path* |after build command will copy the build to a folder or remote ftp server with syntax ftp://user:pass@host[ :path]|
+| *-c path*   | *--copy=path* |Following the completion of the build, this command will transfer the build to a specified folder or an external FTP server using the syntax ftp:/user:pass@host[ :path].|
 | *-u username* | *--username=user* |ftp username.|
 | *-p password* | *--password=pass* |ftp password.|
 | *-fp port*  | *--ftp-port=port* |change the default ftp port.|

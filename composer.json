@@ -7,8 +7,7 @@
     "require": {
         "php": "^7.4 || ^8.0",
         "codeigniter4/framework": "^4.2",
-        "firebase/php-jwt": "^6.3",
-        "ramsey/uuid": "^4.6"
+        "firebase/php-jwt": "^6.3"
     },
     "suggest": {
         "ext-fileinfo": "Improves mime type detection for files"
