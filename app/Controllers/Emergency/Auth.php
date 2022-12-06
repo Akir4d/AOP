@@ -5,7 +5,6 @@ namespace App\Controllers\Emergency;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use \Ramsey\Uuid\Uuid;
 
 abstract class Auth extends BaseController
 {

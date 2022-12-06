@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Controllers\Emergency;
-use Ramsey\Uuid\Uuid;
 
 class Aop extends BaseController
 {

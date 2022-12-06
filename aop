@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const version = 0.30;
+const version = 0.32;
 const { exec, spawn, spawnSync, execSync } = require("child_process");
 const console = require("console");
 const fs = require('fs');
@@ -25,6 +25,7 @@ var ftpPort = 21;
 var ftpSecure = false;
 var forceClean = false;
 var silent = false;
+
 
 
 class FTPClient {
@@ -264,11 +265,12 @@ const copyInsideSourceRecursiveSync = (source, target, show = false) => {
 
 const usage = u => {
     console.log(`\n${R}${E}usage${N}: node aop [Command] [ARG]\n\nCommands:
-    ${G}${E}serve${N} \t- starts ${E}Angular${N} and ${E}Codeigniter${N} develop serve at ${Y}${E}http://localhost:4200${N} and ${Y}${E}http://localhost:8085${N},\n\t \t  you can serve also a different module as comment for example: aop serve emergency\n
+    ${G}${E}serve${N} \t- starts ${E}Angular${N} and ${E}Codeigniter${N} develop serve at ${Y}${E}http://localhost:4200${N} and ${Y}${E}http://localhost:8085${N},\n\t \t  you can serve also a different module as comment for example: aop serve emergency or aop emergency serve\n
     ${G}${E}spark${N} \t- starts ${E}Codeigniter${N} spark utility\n
-    ${G}${E}ng${N}    \t- calls ${E}Angular${N} ng utility, you can start also use it to a different module for example: aop ng emergency ...args
-    ${G}${E}npm${N}    \t- calls ${E}Angular${N} npm utility, you can start also use it to a different module for example: aop npm emergency ...args
-    ${G}${E}npx${N}    \t- calls ${E}Angular${N} npx utility, you can start also use it to a different module for example: aop npx emergency ...args\n
+    ${G}${E}composer${N} \t- starts ${E}Composer${N} php utility\n
+    ${G}${E}ng${N}    \t- calls ${E}Angular${N} ng utility, you can start also use it to a different module for example: aop ng emergency ... or aop emergency ng ....
+    ${G}${E}npm${N}    \t- calls ${E}Angular${N} npm utility, you can start also use it to a different module for example: aop npm emergency ... or aop emergency npm ....
+    ${G}${E}npx${N}    \t- calls ${E}Angular${N} npx utility, you can start also use it to a different module for example: aop npx emergency ... or aop emergency npx ....\n
     ${G}${E}ma${N}    \t- make an ${E}Angular${N} module to load with utility aopRender inside controller
     ${G}${E}mc${N}    \t- convert an existing ${E}Angular${N} project inside asrc to module to load with utility aopRender inside controller\n
     ${G}${E}build${N} \t- builds a complete plug and play package on ${Y}${E}build/${N} folder, you can build also 1 module instead all them, for example: aop build emergency
@@ -545,6 +547,14 @@ const loadAssets = asset => {
     fs.writeFileSync('assets.json', JSON.stringify(assetImport, null, 4));
 }
 
+const composer = args =>{
+    let executable = path.join('writable', 'composer.phar');
+    if(! fs.existsSync(executable))
+    spawnSync(PHP, ["-r", `"copy('https://getcomposer.org/download/latest-stable/composer.phar', 'writable/composer.phar');"`], SPAWNARG);
+    spawnSync(PHP, [ executable, ...args ], SPAWNARG);
+}
+
+
 const menu = () => {
     let arg = (myArgs[1]) ? myArgs[1] : 'all';
     let module = (fs.existsSync(path.join('asrc', arg))) ? arg : 'all';
@@ -564,6 +574,9 @@ const menu = () => {
             break;
         case 'spark':
             spawn(PHP, myArgs, SPAWNARG);
+            break;
+        case 'composer':
+            composer(myArgs.splice(1));
             break;
         case 'ng':
             module = (module == 'all') ? MAINMODULE : module;
@@ -605,8 +618,8 @@ const menu = () => {
             loadAssets(arg);
             break;
         case 'hash':
-            process.stdout.write(`\n${E}The hash for ${G}${E}${myArgs[1]}${N}${E} is ${N}${Y}${E}`);
-            spawnSync(PHP, ["-r", `echo password_hash('${myArgs[1]}', PASSWORD_DEFAULT);`], SPAWNARG);
+            process.stdout.write(`\n${E}One of possible hash for ${G}${E}${myArgs[1]}${N}${E} is ${N}${Y}${E}`);
+            spawnSync(PHP, ["-r", `"echo password_hash('${myArgs[1]}', PASSWORD_DEFAULT);"`], SPAWNARG);
             process.stdout.write(`${N}\n\n`);
             break;
         default:
@@ -628,6 +641,10 @@ const getVersionOnPath = () => {
         }
     }
     return 0;
+}
+
+if(fs.existsSync(path.join(process.cwd(), 'backend'))){
+ process.chdir('backend');
 }
 
 if (fs.existsSync(path.join(process.cwd(), 'aop'))) {

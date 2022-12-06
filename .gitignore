@@ -170,4 +170,5 @@ build
 /package-lock.json
 writable/*.db
 writable/*.txt
+writable/*.phar
 *.angular
