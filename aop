@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const version = 0.28;
+const version = 0.30;
 const { exec, spawn, spawnSync, execSync } = require("child_process");
 const console = require("console");
 const fs = require('fs');
@@ -549,6 +549,14 @@ const menu = () => {
     let arg = (myArgs[1]) ? myArgs[1] : 'all';
     let module = (fs.existsSync(path.join('asrc', arg))) ? arg : 'all';
     parseArguments(myArgs);
+    let ismodule = (fs.existsSync(path.join('asrc', params.command)));
+    if(ismodule){
+        let t = (myArgs[1])?myArgs[1]:'';
+        if(t.includes('ng') || t.includes('npm') || t.includes('npx') || t.includes('serve')) {
+            module = params.command;
+            params.command = t;
+        }
+    }
     switch (params.command) {
         case 'serve':
             module = (module == 'all') ? MAINMODULE : module;
