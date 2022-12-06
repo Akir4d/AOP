@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const version = 0.27;
+const version = 0.28;
 const { exec, spawn, spawnSync, execSync } = require("child_process");
 const console = require("console");
 const fs = require('fs');
@@ -24,6 +24,7 @@ var NPX = '';
 var ftpPort = 21;
 var ftpSecure = false;
 var forceClean = false;
+var silent = false;
 
 
 class FTPClient {
@@ -141,6 +142,9 @@ const parseArguments = () => {
                     break;
                 case '--force-clean':
                     forceClean = true;
+                    break;
+                case '--silent':
+                    silent = true;
                     break;
             }
         } else {
@@ -289,7 +293,7 @@ const check = f => {
             NPM = stdout.split("\n")[0].trim().replace(/ /g, '" "');
             NPX = execSync(WHICH + ' npx').toString();
             if (!fs.existsSync('node_modules')) {
-                spawnSync(NPM, ['install'], SPAWNARG);
+                   spawnSync(NPM, ['install', '--legacy-peer-deps'], SPAWNARG); 
             }
             exec(WHICH + ' php', (error, stdout) => {
                 if (error) {
@@ -318,7 +322,9 @@ const serve = (module) => {
     if (!fs.existsSync('.env')) copyFileSync(path.join('envs', 'development.env'), '.env');
     const codeigniter = spawn(PHP, ['spark', 'serve', '--port', 8085], SPAWNARG);
     SPAWNARG.cwd = path.join('asrc', module);
-    if (!fs.existsSync(path.join(SPAWNARG.cwd, 'node_modules'))) spawnSync(NPM, ['install'], SPAWNARG);
+    if (!fs.existsSync(path.join(SPAWNARG.cwd, 'node_modules'))) {
+        spawnSync(NPM, ['install', '--legacy-peer-deps'], SPAWNARG)
+    }
     const angular = spawn(NG, ['serve'], SPAWNARG);
     delete SPAWNARG.cwd;
     process.on('SIGINT', () => {
@@ -337,7 +343,9 @@ const buildAngular = e => {
             console.log(`${G}${E}Building ${Y}${E}${file}${N}`);
             convertToModule(file);
             SPAWNARG.cwd = path.join('asrc', file);
-            if (!fs.existsSync(path.join(SPAWNARG.cwd, 'node_modules'))) spawnSync(NPM, ['install'], SPAWNARG);
+            if (!fs.existsSync(path.join(SPAWNARG.cwd, 'node_modules'))) {
+                spawnSync(NPM, ['install', '--legacy-peer-deps'], SPAWNARG)
+            }
             spawnSync(NG, ['build'], SPAWNARG);
         }
     } else {
@@ -385,13 +393,17 @@ const buildForOthers = e => {
 }
 
 const copyBuild = () => {
-    let rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
-    rl.question(`${Y}${E}Would yo like to pre-exec composer in build folder ${N}? [${G}${E}yes${N}]/${R}${E}no${N} `, ans => {
-        copyBuildReal((ans !== 'no') ? 'ok' : 'no');
-    });
+    if(silent){
+        copyBuildReal('ok')
+    } else {
+        let rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        });
+        rl.question(`${Y}${E}Would yo like to pre-exec composer in build folder ${N}? [${G}${E}yes${N}]/${R}${E}no${N} `, ans => {
+            copyBuildReal((ans !== 'no') ? 'ok' : 'no');
+        });
+    }
 }
 
 const copyBuildReal = u => {
