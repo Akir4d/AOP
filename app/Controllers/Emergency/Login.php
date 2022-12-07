@@ -35,7 +35,7 @@ class Login extends BaseController
         }
     }
 
-    public function checks(){
+    public function postChecks(){
         $ret[] = $this->checkDb();
         $ret[] = $this->checkCredentials();
         return $this->renderJson($ret);

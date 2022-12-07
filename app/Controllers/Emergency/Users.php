@@ -9,7 +9,7 @@ class Users extends Auth
         //
     } 
 
-    public function adminUser(){
+    public function postAdminUser(){
         if($json = $this->request->getJSON()){
             $env = file_get_contents(APPPATH . '../.env');
             $env = $this->replaceOnEnv('emergency.login.firstname', $json->firstName, $env);

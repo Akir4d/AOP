@@ -19,9 +19,5 @@ class StartDev extends BaseCommand
         CLI::write('SYSTEMPATH: ' . CLI::color(SYSTEMPATH, 'yellow'));
         CLI::write('ROOTPATH: ' . CLI::color(ROOTPATH, 'yellow'));
         CLI::write('Included files: ' . CLI::color(count(get_included_files()), 'yellow'));
-        exec('ng serve &>2 &');
-        CLI::write(CLI::color('Angular Development Server Started at: ', 'green'). CLI::color("http://localhost:4200", 'yellow'));
-        $this->call('serve');
-
     }
 }
