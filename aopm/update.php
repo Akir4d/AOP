@@ -18,7 +18,12 @@ $composerPath = realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARA
 $updateDir = realpath($composerPath . DIRECTORY_SEPARATOR . 'writable');
 $updateFile = $updateDir . DIRECTORY_SEPARATOR . 'firstup.info.txt';
 
+
 if (!file_exists($composerPath . DIRECTORY_SEPARATOR . 'vendor') || !file_exists($updateFile)) {
+    $countdown = true;
+    $fatal = false;
+    $sqldrv = "";
+    $config = ".env";
 
     if (php_sapi_name() !== 'cli') {
         @apache_setenv('no-gzip', 1);
@@ -30,9 +35,7 @@ if (!file_exists($composerPath . DIRECTORY_SEPARATOR . 'vendor') || !file_exists
         ob_implicit_flush(1);
         include "header.php";
     }
-
-    $fatal = false;
-
+    
     if (!extension_loaded('intl')) {
         echo "$H1" . "You have to enable intl in your php.ini configuration$H1C";
         $fatal = true;
@@ -53,12 +56,36 @@ if (!file_exists($composerPath . DIRECTORY_SEPARATOR . 'vendor') || !file_exists
         $fatal = true;
     }
 
+    
+
+    $re = '/^[^\#]+(database\.default\.DBDriver = +(.*))/m';
+    preg_match_all($re, file_get_contents($composerPath.'/.env'), $matches, PREG_SET_ORDER, 0);
+    if(array_key_exists(0, $matches) && array_key_exists(2, $matches[0]) && !empty($matches[0][2])){
+        $sqldrv = $matches[0][2];
+
+    } else {
+        $default = [];
+        $re = '/\$default .*?;+$/Dms';
+        preg_match($re, file_get_contents($composerPath.'/app/Config/Database.php'), $matches2, PREG_OFFSET_CAPTURE, 0);
+        define('ENVIRONMENT', 'production');
+        eval($matches2[0][0]);
+        $config = '/app/Config/Database.php';
+        $sqldrv = (empty($default) && array_key_exists("DBDriver",$default))?"":$default["DBDriver"];
+    }
+
+    
+    
     if (!is_writable($updateDir)) {
         echo "$H1" . "You have to make writable '$updateDir' and also 'cache' and 'vendor' folders and composer.lock file in $composerPath if you want composer auto-update $H1C";
 
         $fatal = true;
     }
 
+    if(!extension_loaded(strtolower($sqldrv))){
+        echo "$H1" . "It's expected that the database driver named '$sqldrv' that is specified in the $config file would not be supported by this particular php configuration. If the application is not functioning properly, check the php.ini file. $H1C";
+        $countdown = false;
+    }
+ 
     if ($fatal) {
         if (php_sapi_name() !== 'cli') {
             echo '</section></body></html>';

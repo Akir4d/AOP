@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const version = 0.33;
+const version = 0.35;
 const { exec, spawn, spawnSync, execSync } = require("child_process");
 const console = require("console");
 const fs = require('fs');
@@ -265,7 +265,7 @@ const copyInsideSourceRecursiveSync = (source, target, show = false) => {
 
 const usage = u => {
     console.log(`\n${R}${E}usage${N}: node aop [Command] [ARG]\n\nCommands:
-    ${G}${E}serve${N} \t- begins the development serve for ${E}Angular${N} and ${E}Codeigniter${N} at ${Y}${E}http://localhost:4200${N} and ${Y}${E}http://localhost:8085${N},\n\t \t  You might alternatively use a separate module to serve as a comment,\n\t \t  for instance: aop emergency serve or aop serve emergency\n
+    ${G}${E}serve${N} \t- begins the development serve for ${E}Angular${N} and ${E}Codeigniter${N} \n\t \t  at ${Y}${E}http://localhost:4200${N} and ${Y}${E}http://localhost:8085${N},\n\t \t  You might alternatively use a separate module to serve as a comment,\n\t \t  for instance: aop emergency serve or aop serve emergency\n
     ${G}${E}spark${N} \t- launches the ${E}Codeigniter${N} spark utility\n
     ${G}${E}composer${N} \t- launches the ${E}Composer${N} PHP tool\n
     ${G}${E}ng${N}    \t- invokes the ${E}Angular${N} ng utility, and you may also begin using it with a different module, \n\t \t  such as aop ng emergency... or aop emergency ng ... for example.
@@ -303,17 +303,21 @@ const check = f => {
                     return;
                 } else {
                     PHP = fixPath(stdout.split("\n")[0].trim());
-                    exec(WHICH + ' ng', (error, stdout) => {
-                        if (error) {
-                            console.log(`${G}${E}Installing missed ng command:${N}`);
-                            npmprecess = spawn(NPM, ['install', '-g', '@angular/cli@14'], SPAWNARG);
-                            npmprecess.on('exit', () => check(f));
-                            return;
-                        } else {
-                            NG = fixPath(stdout.split("\n")[0].trim());
-                            f();
-                        }
-                    });
+                    if(fs.existsSync("asrc")) {
+                        exec(WHICH + ' ng', (error, stdout) => {
+                            if (error) {
+                                console.log(`${G}${E}Installing missed ng command:${N}`);
+                                npmprecess = spawn(NPM, ['install', '-g', '@angular/cli@14'], SPAWNARG);
+                                npmprecess.on('exit', () => check(f));
+                                return;
+                            } else {
+                                NG = fixPath(stdout.split("\n")[0].trim());
+                                f();
+                            }
+                        });
+                    } else {
+                        f();
+                    }
                 }
             });
         }
@@ -321,7 +325,8 @@ const check = f => {
 }
 
 const serve = (module) => {
-    if (!fs.existsSync('.env')) copyFileSync(path.join('envs', 'development.env'), '.env');
+    let source = path.join('envs', 'development.env');
+    if (!fs.existsSync('.env') && fs.existsSync(source)) copyFileSync(source, '.env');
     const codeigniter = spawn(PHP, ['spark', 'serve', '--port', 8085], SPAWNARG);
     SPAWNARG.cwd = path.join('asrc', module);
     if (!fs.existsSync(path.join(SPAWNARG.cwd, 'node_modules'))) {
@@ -345,6 +350,7 @@ const fixPath = e =>{
 }
 
 const buildAngular = e => {
+    if(!fs.existsSync('asrc')) return;
     if (!fs.existsSync('vendor')) spawnSync(PHP, [path.join('aopm', 'update.php')], SPAWNARG);
     if (e == 'all') {
         files = fs.readdirSync('asrc');
@@ -457,7 +463,7 @@ const copyBuildReal = u => {
 
 const installAOP = e => {
     if (!fs.existsSync('.env')) copyFileSync(path.join('envs', 'development.env'), '.env');
-    let nodePath = path.normalize(path.join(NG.replace(/"/, ''), '..'));
+    let nodePath = path.normalize(path.join(NPM.replace(/"/, ''), '..'));
     copyFileSync(path.join('aop'), nodePath, { overwrite: true | false });
     if (process.platform.startsWith('win')) {
         fs.writeFileSync(path.join(nodePath, 'aop.cmd'), `@ECHO off
@@ -483,6 +489,7 @@ const installAOP = e => {
 }
 
 const createNewModule = module => {
+    if(!fs.existsSync('asrc')) return;
     let dest = path.join('asrc', module);
     if (fs.existsSync(dest)) {
         console.log(`The module already exists! I can't overwrite it!`);
@@ -496,6 +503,7 @@ const createNewModule = module => {
 }
 
 const convertToModule = module => {
+    if(!fs.existsSync('asrc')) return;
     let file = path.join('asrc', module, 'angular.json');
     let filebk = path.join('asrc', module, 'angular-no-module.json');
     if (!fs.existsSync(file)) {
@@ -561,6 +569,18 @@ const composer = args =>{
     spawnSync(PHP, [ executable, ...args ], SPAWNARG);
 }
 
+const runNode = (n,m)=>{
+    if(fs.existsSync('asrc')) {
+        m = (m == 'all') ? MAINMODULE : m;
+        SPAWNARG.cwd = path.join('asrc', m)
+        spawn(n, myArgs.splice(2), SPAWNARG);
+    } else {
+        if(params.command == 'ng') return;
+        m = (m == 'all') ? MAINMODULE : m;
+        spawn(n, myArgs.splice(1), SPAWNARG);
+    }
+    
+}
 
 const menu = () => {
     let arg = (myArgs[1]) ? myArgs[1] : 'all';
@@ -574,6 +594,7 @@ const menu = () => {
             params.command = t;
         }
     }
+    
     switch (params.command) {
         case 'serve':
             module = (module == 'all') ? MAINMODULE : module;
@@ -586,19 +607,13 @@ const menu = () => {
             composer(myArgs.splice(1));
             break;
         case 'ng':
-            module = (module == 'all') ? MAINMODULE : module;
-            SPAWNARG.cwd = path.join('asrc', module)
-            spawn(NG, myArgs.splice(2), SPAWNARG);
+            runNode(NG, module);
             break;
         case 'npm':
-            module = (module == 'all') ? MAINMODULE : module;
-            SPAWNARG.cwd = path.join('asrc', module)
-            spawn(NPM, myArgs.splice(2), SPAWNARG);
+            runNode(NPM, module);
             break;
         case 'npx':
-            module = (module == 'all') ? MAINMODULE : module;
-            SPAWNARG.cwd = path.join('asrc', module)
-            spawn(NPX, myArgs.splice(2), SPAWNARG);
+            runNode(NPX, module);
             break;
         case 'build':
             module = (arg == 'all') ? arg : module;
@@ -675,6 +690,8 @@ if (fs.existsSync(path.join(process.cwd(), 'aop'))) {
     } else {
         myStart();
     }
+} else {
+    myStart();
 }
 
 function myStart() {
