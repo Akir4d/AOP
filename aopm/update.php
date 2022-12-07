@@ -22,42 +22,13 @@ $updateFile = $updateDir . DIRECTORY_SEPARATOR . 'firstup.info.txt';
 if (!file_exists($composerPath . DIRECTORY_SEPARATOR . 'vendor') || !file_exists($updateFile)) {
     $countdown = true;
     $fatal = false;
-    $sqldrv = "";
+    $reqiredModules = []; // see settings.php
+    $nameConvertions = []; // see settings.php
+    include "settings.php";
+
+    $dbdrv = "";
+    $dbdrvpres = true;
     $config = ".env";
-
-    if (php_sapi_name() !== 'cli') {
-        @apache_setenv('no-gzip', 1);
-        @ini_set('zlib.output_compression', 0);
-        @ini_set('implicit_flush', 1);
-        for ($i = 0; $i < ob_get_level(); $i++) {
-            ob_end_flush();
-        }
-        ob_implicit_flush(1);
-        include "header.php";
-    }
-    
-    if (!extension_loaded('intl')) {
-        echo "$H1" . "You have to enable intl in your php.ini configuration$H1C";
-        $fatal = true;
-    }
-
-    if (!extension_loaded('curl')) {
-        echo "$H1" . "You have to enable curl in your php.ini configuration$H1C";
-        $fatal = true;
-    }
-
-    if (!extension_loaded('json')) {
-        echo "$H1" . "You have to enable json in your php.ini configuration$H1C";
-        $fatal = true;
-    }
-
-    if (!extension_loaded('mbstring')) {
-        echo "$H1" . "You have to enable mbstring in your php.ini configuration$H1C";
-        $fatal = true;
-    }
-
-    
-
     $re = '/^[^\#]+(database\.default\.DBDriver = +(.*))/m';
     preg_match_all($re, file_get_contents($composerPath.'/.env'), $matches, PREG_SET_ORDER, 0);
     if(array_key_exists(0, $matches) && array_key_exists(2, $matches[0]) && !empty($matches[0][2])){
@@ -73,6 +44,25 @@ if (!file_exists($composerPath . DIRECTORY_SEPARATOR . 'vendor') || !file_exists
         $sqldrv = (empty($default) && array_key_exists("DBDriver",$default))?"":$default["DBDriver"];
     }
 
+    if (php_sapi_name() !== 'cli') {
+        @apache_setenv('no-gzip', 1);
+        @ini_set('zlib.output_compression', 0);
+        @ini_set('implicit_flush', 1);
+        for ($i = 0; $i < ob_get_level(); $i++) {
+            ob_end_flush();
+        }
+        ob_implicit_flush(1);
+        include "header.php";
+    }
+
+    
+    
+    foreach($reqiredModules as $req){
+        if (!extension_loaded($req)) {
+            echo "$H1" . "You have to enable $req in your php.ini configuration$H1C";
+            $fatal = true;
+        }
+    }
     
     
     if (!is_writable($updateDir)) {
@@ -81,7 +71,18 @@ if (!file_exists($composerPath . DIRECTORY_SEPARATOR . 'vendor') || !file_exists
         $fatal = true;
     }
 
-    if(!extension_loaded(strtolower($sqldrv))){
+    if(!empty($sqldrv)){
+        $extensions = get_loaded_extensions();
+        $drvavl = array_keys($nameConvertions);
+        $dbdrvpres = false;
+        if(in_array($sqldrv, $drvavl)){
+            foreach($nameConvertions[$sqldrv] as $phpdrv){
+                if(in_array($phpdrv, $extensions) )$dbdrvpres = true;
+            }
+        }
+    }
+
+    if(!$dbdrvpres){
         echo "$H1" . "It's expected that the database driver named '$sqldrv' that is specified in the $config file would not be supported by this particular php configuration. If the application is not functioning properly, check the php.ini file. $H1C";
         $countdown = false;
     }
