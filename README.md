@@ -1,5 +1,7 @@
 # Angular On PHP (AOP)
 
+I'm now working on developing a solution backend and frontend that is based on PHP and Angular. I decided to use Codeigniter as the PHP framework backend (and potentially frontend at you choice). Codeigniter was the best choice for me because to its extensive documentation, its diminutive size, and the fact that it offers an optional robust business logic. The framework makes use of a script that I produced that assists even inexperienced programmers in adding Modules and Controllers. It is also built in two versions: one for HTTP servers that support .htaccess (like apache) and one for all other servers with the "public" folder that has to be made public. Also includes an update manager.... everyone is welcome to contribute!
+
 This is a comprehensive modular template for developing an application using Angular and CodeIgniter 4.2.
 This template may be run on a standard LAMP (PHP 7.4 or highter) server without any special configuration; simply build and copy to the apache folder and enjoy. 
 
