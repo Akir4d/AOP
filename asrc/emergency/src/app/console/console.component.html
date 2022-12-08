@@ -1,43 +1,8 @@
-<div class="min-h-screen flex surface-ground">
+<p-toast></p-toast>
+<div class="flex surface-ground">
     <app-sidebar></app-sidebar>
-    <div class="min-h-screen flex flex-column relative flex-auto">
-      <div
-        class="flex justify-content-between align-items-center px-5 surface-0 border-bottom-1 surface-border relative lg:static"
-        style="height:60px">
-        <div  class="flex">
-          <a pRipple class="cursor-pointer inline-flex align-items-center justify-content-center lg:hidden text-700 mr-3"
-            pStyleClass="#app-sidebar-1" enterClass="hidden" enterActiveClass="fadeinleft" leaveToClass="hidden"
-            leaveActiveClass="fadeoutleft" [hideOnOutsideClick]="true">
-            <i class="pi pi-bars text-4xl"></i>
-          </a>
-          <span *ngIf="false" class="p-input-icon-left">
-            <i class="pi pi-search"></i>
-            <input type="text" pInputText class="border-none w-10rem sm:w-20rem" placeholder="Search">
-          </span>
-        </div>
-        <a pRipple class="cursor-pointer block lg:hidden text-700" pStyleClass="@next" enterClass="hidden"
-          enterActiveClass="fadein" leaveToClass="hidden" leaveActiveClass="fadeout" [hideOnOutsideClick]="true">
-          <i class="pi pi-ellipsis-v text-2xl"></i>
-        </a>
-        <ul
-          class="list-none p-0 m-0 hidden lg:flex lg:align-items-center select-none lg:flex-row
-                surface-section border-1 lg:border-none surface-border right-0 top-100 z-1 shadow-2 lg:shadow-none absolute lg:static">
-          <li>
-            <a pRipple class="flex p-3 lg:px-3 lg:py-2 align-items-center text-600 hover:text-900 hover:surface-100 font-medium border-round cursor-pointer
-                        transition-duration-150 transition-colors">
-              <i class="pi pi-inbox text-base lg:text-2xl mr-2 lg:mr-0"></i>
-              <span class="block lg:hidden font-medium">Inbox</span>
-            </a>
-          </li>
-          <li>
-            <a pRipple class="flex p-3 lg:px-3 lg:py-2 align-items-center text-600 hover:text-900 hover:surface-100 font-medium border-round cursor-pointer
-                        transition-duration-150 transition-colors">
-              <i class="pi pi-bell text-base lg:text-2xl mr-2 lg:mr-0" pBadge severity="danger"></i>
-              <span class="block lg:hidden font-medium">Notifications</span>
-            </a>
-          </li>
-        </ul>
-      </div>
+    <div class="flex flex-column relative flex-auto">
+    <app-topbar></app-topbar>
       <div class="p-5 bg-primary flex-auto grid-nogutter">
           <router-outlet></router-outlet>
       </div>

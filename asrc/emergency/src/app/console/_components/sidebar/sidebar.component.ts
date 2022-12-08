@@ -8,6 +8,8 @@ import { AccountService } from '@app/_services';
 })
 export class SidebarComponent {
 
+  display: boolean = true;
+
   constructor(private accountService: AccountService) {
   }
   

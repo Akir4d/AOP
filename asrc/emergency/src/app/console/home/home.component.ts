@@ -1,27 +1,34 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { User, DbConfig, Select } from '@app/_dtos';
 import { AccountService, DbEditorService } from '@app/_services';
-import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {MessageService} from 'primeng/api';
 
-@Component({ templateUrl: 'home.component.html', styleUrls: ['./home.component.scss']})
+@Component({ templateUrl: 'home.component.html'})
 export class HomeComponent implements OnInit{
     user: User | null;
     dbConfig: DbConfig = {} as DbConfig;
-    listForm: any = {   
-    DSN: "text",
+    listForm: any = {  
+        
+    DBDriver: "select:dbtype",
+    pConnect: "boolean",
+    port: "numeric",
+
+    database: "text",
+    DBPrefix: "text",
+    DBDebug:"boolean",
+
     hostname: "text",
     username: "text",
     password: "text",
-    database: "text",
-    DBDriver: "select:dbtype",
-    DBPrefix: "text",
-    port: "numeric",
-    pConnect: "boolean",
-    DBDebug:"boolean",
+
     encrypt: "boolean",
     compress:"boolean",
     strictOn: "boolean",
+
+    charset: "text",
+    DBCollat: "text",
+    DSN: "text"
     };
 
     databases: Select[] = [
@@ -38,9 +45,9 @@ export class HomeComponent implements OnInit{
 
     constructor(private accountService: AccountService, 
         private dbeditor: DbEditorService,
-        private route: ActivatedRoute,
         private formBuilder: FormBuilder,
-        private router: Router) {
+        private messageService: MessageService
+        ) {
         this.user = this.accountService.userValue;
     }
 

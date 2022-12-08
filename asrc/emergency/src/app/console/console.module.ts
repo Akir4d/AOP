@@ -1,3 +1,4 @@
+import { AdminComponent } from '@app/console/admin/admin.component';
 import { HomeComponent } from './home/home.component';
 import { RouterModule } from '@angular/router';
 import { NgModule } from '@angular/core';
@@ -11,17 +12,21 @@ import { InputTextModule } from 'primeng/inputtext';
 import {InputNumberModule} from 'primeng/inputnumber';
 import { StyleClassModule } from 'primeng/styleclass';
 import { ButtonModule } from 'primeng/button';
-import { SidebarComponent } from '@app/_components/sidebar/sidebar.component';
+import { SidebarComponent } from '@app/console/_components/sidebar/sidebar.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import {InputSwitchModule} from 'primeng/inputswitch';
 import {DropdownModule} from 'primeng/dropdown';
-
+import {ToastModule} from 'primeng/toast';
+import { TopbarComponent } from './_components/topbar/topbar.component';
+import {SidebarModule} from 'primeng/sidebar';
 
 @NgModule({
   declarations: [
     ConsoleComponent,
     HomeComponent,
-    SidebarComponent
+    SidebarComponent,
+    TopbarComponent,
+    AdminComponent
   ],
   bootstrap: [
     ConsoleComponent
@@ -38,7 +43,9 @@ import {DropdownModule} from 'primeng/dropdown';
     ButtonModule,
     InputNumberModule,
     InputSwitchModule,
-    DropdownModule
+    DropdownModule,
+    ToastModule,
+    SidebarModule
   ],
   exports:[SidebarComponent]
 })

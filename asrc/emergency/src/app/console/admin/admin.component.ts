@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first } from 'rxjs/operators';
-
+import {MessageService} from 'primeng/api';
 import { AccountService } from '@app/_services';
 
 @Component({
@@ -21,7 +21,8 @@ export class AdminComponent implements OnInit {
   constructor(
       private formBuilder: FormBuilder,
       private route: ActivatedRoute,
-      private accountService: AccountService
+      private accountService: AccountService,
+      private messageService: MessageService
   ) { }
 
   ngOnInit() {
@@ -53,10 +54,12 @@ export class AdminComponent implements OnInit {
           .pipe(first())
           .subscribe({
               next: () => {
+                    this.messageService.add({severity:'success', summary:'Admin User Modified!', detail:'Success!'});
                   this.submitting = false;
               },
               error: error => {
                   //this.alertService.error(error);
+                  this.messageService.add({severity:'error', summary:'Save Error', detail: error});
                   this.submitting = false;
               }
           })

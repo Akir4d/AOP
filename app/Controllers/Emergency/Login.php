@@ -4,12 +4,11 @@ namespace App\Controllers\Emergency;
 
 use App\Controllers\Emergency\BaseController;
 use \CodeIgniter\HTTP\ResponseInterface;
-use \Ramsey\Uuid\Uuid;
 
 class Login extends BaseController
 {
 
-    public function index()
+    public function postLogin()
     {
  
         $log = new \Config\Emergency\Emergency();
@@ -39,10 +38,6 @@ class Login extends BaseController
         $ret[] = $this->checkDb();
         $ret[] = $this->checkCredentials();
         return $this->renderJson($ret);
-    }
-
-    public function test(){
-        echo '<pre>', var_dump($_SERVER), '</pre>';
     }
 
 }

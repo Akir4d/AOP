@@ -2,8 +2,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ConsoleComponent } from './console.component';
 import { HomeComponent } from './home/home.component';
+import { AdminComponent } from './admin/admin.component';
 
-const usersModule = () => import('./users/users.module').then(x => x.UsersModule);
 const routes: Routes = [
   {
     path: '',
@@ -11,7 +11,7 @@ const routes: Routes = [
     children: [
       {
         path: 'admin',
-        loadChildren: usersModule
+        component: AdminComponent
       },
       {
         path: '**',
