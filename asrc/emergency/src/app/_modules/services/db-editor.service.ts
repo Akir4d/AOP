@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { MessagesJs, DbConfig } from '@app/_dtos';
+import { MessagesJs, DbConfig } from '@app/_modules/dtos';
 import { map } from 'rxjs';
 
 

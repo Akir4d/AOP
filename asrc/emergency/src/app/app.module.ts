@@ -3,14 +3,9 @@ import { BrowserModule } from '@angular/platform-browser';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
-import { AppRoutingModule } from './app-routing.module';
-import { JwtInterceptor, ErrorInterceptor } from './_helpers';
-import { AppComponent } from './app.component';
-import {AccordionModule} from 'primeng/accordion';
-import {CardModule} from 'primeng/card';
-import {InputTextModule} from 'primeng/inputtext';
-import {StyleClassModule} from 'primeng/styleclass';
-import {ButtonModule} from 'primeng/button';
+import { AppRoutingModule } from '@app/app-routing.module';
+import { JwtInterceptor, ErrorInterceptor } from '@app/_modules/helpers';
+import { AppComponent } from '@app/app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {ToastModule} from 'primeng/toast'; 
 
@@ -20,11 +15,6 @@ import {ToastModule} from 'primeng/toast';
         ReactiveFormsModule,
         HttpClientModule,
         AppRoutingModule,
-        AccordionModule,
-        CardModule,
-        InputTextModule,
-        StyleClassModule,
-        ButtonModule,
         BrowserAnimationsModule,
         ToastModule
     ],

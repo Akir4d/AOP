@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-
 import { AccountRoutingModule } from './login-routing.module';
 import { LoginComponent } from './login.component';
 import {AccordionModule} from 'primeng/accordion';
@@ -27,6 +26,7 @@ import {MessageModule} from 'primeng/message';
     ],
     declarations: [
         LoginComponent
-    ]
+    ],
+    bootstrap: [LoginComponent]
 })
 export class AccountModule { }

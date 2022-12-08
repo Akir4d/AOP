@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { AccountService } from '@app/_services';
+import { AccountService } from '@app/_modules/services';
 
 @Component({
   selector: 'app-sidebar',

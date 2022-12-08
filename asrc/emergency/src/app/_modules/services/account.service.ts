@@ -5,7 +5,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 
-import { User, MessagesJs } from '@app/_dtos';
+import { User, MessagesJs } from '@app/_modules/dtos';
 
 @Injectable({ providedIn: 'root' })
 export class AccountService {

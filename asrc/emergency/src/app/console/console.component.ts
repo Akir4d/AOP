@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { User } from '@app/_dtos';
-import { AccountService } from '@app/_services';
+import { User } from '@app/_modules/dtos';
+import { AccountService } from '@app/_modules/services';
 import {MessageService} from 'primeng/api';
 
 @Component({

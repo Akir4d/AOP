@@ -16,7 +16,7 @@ use \Firebase\JWT\JWT;
 
 /**
  * Class BaseController
- * This is a copy of AopBaseController + BaseController because this module 
+ * This is a copy of AopBaseController + BaseController + Filters because this module 
  * must be critical mission
  */
 abstract class BaseController extends Controller

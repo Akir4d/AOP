@@ -2,7 +2,7 @@
 import { Observable, Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
-import { Alert, AlertType, AlertOptions } from '@app/_dtos';
+import { Alert, AlertType, AlertOptions } from '@app/_modules/dtos';
 
 @Injectable({ providedIn: 'root' })
 export class AlertService {

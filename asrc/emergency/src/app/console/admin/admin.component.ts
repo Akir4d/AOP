@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first } from 'rxjs/operators';
 import {MessageService} from 'primeng/api';
-import { AccountService } from '@app/_services';
+import { AccountService } from '@app/_modules/services';
 
 @Component({
   selector: 'app-admin',

@@ -19,6 +19,7 @@ import {DropdownModule} from 'primeng/dropdown';
 import {ToastModule} from 'primeng/toast';
 import { TopbarComponent } from './_components/topbar/topbar.component';
 import {SidebarModule} from 'primeng/sidebar';
+import {DividerModule} from 'primeng/divider';
 
 @NgModule({
   declarations: [
@@ -45,8 +46,9 @@ import {SidebarModule} from 'primeng/sidebar';
     InputSwitchModule,
     DropdownModule,
     ToastModule,
-    SidebarModule
+    SidebarModule,
+    DividerModule
   ],
-  exports:[SidebarComponent]
+  exports:[SidebarComponent, TopbarComponent]
 })
 export class ConsoleModule { }

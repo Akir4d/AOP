@@ -1,7 +1,7 @@
 ﻿import { Component, OnInit } from '@angular/core';
-import { User, DbConfig, Select } from '@app/_dtos';
-import { AccountService, DbEditorService } from '@app/_services';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { User, DbConfig, Select } from '@app/_modules/dtos';
+import { AccountService, DbEditorService } from '@app/_modules/services';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import {MessageService} from 'primeng/api';
 
 @Component({ templateUrl: 'home.component.html'})
@@ -9,18 +9,18 @@ export class HomeComponent implements OnInit{
     user: User | null;
     dbConfig: DbConfig = {} as DbConfig;
     listForm: any = {  
-        
-    DBDriver: "select:dbtype",
-    pConnect: "boolean",
-    port: "numeric",
 
+    DBDriver: "select:dbtype",
     database: "text",
     DBPrefix: "text",
-    DBDebug:"boolean",
 
     hostname: "text",
     username: "text",
     password: "text",
+
+    port: "numeric",
+    pConnect: "boolean",
+    DBDebug:"boolean",
 
     encrypt: "boolean",
     compress:"boolean",
@@ -70,6 +70,10 @@ export class HomeComponent implements OnInit{
     }
 
     onSubmit(): void {
+
+    }
+
+    checkDb(){
 
     }
 
