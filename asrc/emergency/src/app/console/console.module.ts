@@ -9,17 +9,20 @@ import { ConsoleComponent } from './console.component';
 import { AccordionModule } from 'primeng/accordion';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
-import {InputNumberModule} from 'primeng/inputnumber';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { StyleClassModule } from 'primeng/styleclass';
 import { ButtonModule } from 'primeng/button';
 import { SidebarComponent } from '@app/console/_components/sidebar/sidebar.component';
 import { ReactiveFormsModule } from '@angular/forms';
-import {InputSwitchModule} from 'primeng/inputswitch';
-import {DropdownModule} from 'primeng/dropdown';
-import {ToastModule} from 'primeng/toast';
+import { InputSwitchModule } from 'primeng/inputswitch';
+import { DropdownModule } from 'primeng/dropdown';
+import { ToastModule } from 'primeng/toast';
 import { TopbarComponent } from './_components/topbar/topbar.component';
-import {SidebarModule} from 'primeng/sidebar';
-import {DividerModule} from 'primeng/divider';
+import { SidebarModule } from 'primeng/sidebar';
+import { DividerModule } from 'primeng/divider';
+import { MessagesModule } from 'primeng/messages';
+import { MessageModule } from 'primeng/message';
+import {BadgeModule} from 'primeng/badge';
 
 @NgModule({
   declarations: [
@@ -47,8 +50,11 @@ import {DividerModule} from 'primeng/divider';
     DropdownModule,
     ToastModule,
     SidebarModule,
-    DividerModule
+    DividerModule,
+    MessagesModule,
+    MessageModule,
+    BadgeModule
   ],
-  exports:[SidebarComponent, TopbarComponent]
+  exports: [SidebarComponent, TopbarComponent]
 })
 export class ConsoleModule { }

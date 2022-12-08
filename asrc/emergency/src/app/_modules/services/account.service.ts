@@ -11,7 +11,6 @@ import { User, MessagesJs } from '@app/_modules/dtos';
 export class AccountService {
   private userSubject: BehaviorSubject<User | null>;
   public user: Observable<User | null>;
-  private requestOptions: any = {};
 
   constructor(
     private router: Router,
@@ -52,7 +51,7 @@ export class AccountService {
   }
 
   update(params: any) {
-    return this.http.post(`${document.getElementsByTagName("base")[0].dataset?.api}/users/adminUser`, params, this.requestOptions)
+    return this.http.post(`${document.getElementsByTagName("base")[0].dataset?.api}/users/adminUser`, params)
       .pipe(map(x => {
         // update local storage
         const user = { ...this.userValue, ...params };

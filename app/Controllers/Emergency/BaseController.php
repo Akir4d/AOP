@@ -297,6 +297,13 @@ abstract class BaseController extends Controller
         }
     }
 
+    /**
+     * Summary of replaceOnEnv replace a value instide Env
+     * @param mixed $par complete env path 
+     * @param mixed $value value to write
+     * @param mixed $file the whole string .env file 
+     * @return array|null|string
+     */
     protected function replaceOnEnv($par, $value, $file)
     {
         if (is_string($value)) {
@@ -307,9 +314,9 @@ abstract class BaseController extends Controller
         }
 
         if (is_bool($value))
-            $value = ($value) ? 'true' : 'false'; 
-        
-        
+            $value = ($value) ? 'true' : 'false';
+
+        if ($value == null) return $file;
 
         $quoted = str_replace('.', '\.', $par);
         $re = '/.*?' . $quoted . '.*?\= (.*)/m';

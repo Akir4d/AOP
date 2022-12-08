@@ -3,32 +3,33 @@
         <form *ngIf="formDb" [formGroup]="formDb" (ngSubmit)="onSubmit()">
             <div class="grid">
                 <div *ngFor="let item of listFormKeys; let i=index" class="col-12 md:col-6 xl:col-4">
-                    <div [ngSwitch]="listForm[item]" class="field py-2">
+                    <div [ngSwitch]="listForm[item].type" class="field py-2">
                         <div *ngSwitchCase="'select:dbtype'" class="flex align-items-center w-full">
-                            <p-dropdown [options]="databases" formControlName="DBDriver" optionLabel="name"
+                            <p-dropdown [options]="databases" formControlName="{{item}}" optionLabel="name" optionValue="value"
                                 styleClass="w-full"></p-dropdown>
                         </div>
                         <div *ngSwitchCase="'boolean'" class="flex align-items-center">
-                            <span class="mr-4">{{item}}{{i>6?' (Expert)':''}}</span>
+                            <span class="mr-4">{{listForm[item].desc}}</span>
                             <p-inputSwitch formControlName="{{item}}"></p-inputSwitch>
                         </div>
                         <span *ngSwitchCase="'numeric'" class="p-float-label">
                             <p-inputNumber formControlName="{{item}}" [showButtons]="true" [format]="false"
                                 styleClass="w-full"></p-inputNumber>
-                            <label for="float-input">{{item}} (default MySQL: 3306, Postgre: 5432)</label>
+                            <label for="float-input">{{listForm[item].desc}}</label>
                         </span>
                         <span *ngSwitchDefault class="p-float-label">
                             <input type="text" pInputText formControlName="{{item}}" class="w-full" [ngClass]="" />
-                            <label for="float-input">{{item}}{{i>6?' (Expert)':''}}</label>
+                            <label for="float-input">{{listForm[item].desc}}</label>
                         </span>
                     </div>
                 </div>
             </div>
+            <p-messages></p-messages>
             <div class="flex flex-row-reverse">
                 <button pButton="submitting" class="m-1">
                     Save
                 </button>
-                <button pButton="button" (click)="checkDb()" class="m-1 p-button-secondary">Check</button>
+                <a pButton="button" (click)="checkDb()" class="m-1 p-button-secondary">Check</a>
             </div>
         </form>
     </p-card>

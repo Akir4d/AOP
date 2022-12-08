@@ -10,5 +10,4 @@ class Aop extends AopBaseController
         return $this->aopRender("main", "/", ['api' => base_url("emergency/aop")]);
     }
 
-
 }

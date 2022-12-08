@@ -10,3 +10,5 @@ $routes->get('emergency/checks/dbConfig', '\App\Controllers\Emergency\Checks::ge
 $routes->post('emergency/login', 'Emergency\Login::postLogin');
 $routes->post('emergency/login/checks', 'Emergency\Login::postChecks');
 $routes->post('emergency/users/adminUser', 'Emergency\Users::postAdminUser');
+$routes->post('emergency/envedit/dbTest', 'Emergency\Envedit::postDbTest'); 
+$routes->post('emergency/envedit/saveDbDefault', 'Emergency\Envedit::postSaveDbDefault');

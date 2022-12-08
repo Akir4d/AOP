@@ -24,4 +24,12 @@ export class DbEditorService {
     return this.http.get<DbConfig>(`${document.getElementsByTagName("base")[0].dataset?.api}/checks/dbConfig`, {});
   }
 
+  dbTest(params: any) {
+    return this.http.post<MessagesJs>(`${document.getElementsByTagName("base")[0].dataset?.api}/envedit/dbTest`, params);
+  }
+
+  saveDbDefault(params: any) {
+    return this.http.post<MessagesJs>(`${document.getElementsByTagName("base")[0].dataset?.api}/envedit/saveDbDefault`, params);
+  }
+
 }

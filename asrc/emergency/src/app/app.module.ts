@@ -7,7 +7,7 @@ import { AppRoutingModule } from '@app/app-routing.module';
 import { JwtInterceptor, ErrorInterceptor } from '@app/_modules/helpers';
 import { AppComponent } from '@app/app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import {ToastModule} from 'primeng/toast'; 
+import { ToastModule } from 'primeng/toast';
 
 @NgModule({
     imports: [
