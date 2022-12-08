@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Database\Migrations\Api;
+namespace App\Database\Migrations\Database;
 
 use CodeIgniter\Database\Migration;
 use CodeIgniter\Database\RawSql;
@@ -15,6 +15,11 @@ class Users extends Migration
                 'constraint' => 11,
                 'unsigned'   => true,
                 'auto_increment' => true
+            ],
+            'username' => [
+                'type' => 'VARCHAR',
+                'constraint' => 100,
+                'null' => false
             ],
             'email' => [
                 'type' => 'VARCHAR',

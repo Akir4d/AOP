@@ -72,6 +72,7 @@ if (!file_exists($composerPath . DIRECTORY_SEPARATOR . 'vendor') || !file_exists
     }
 
     if(!empty($sqldrv)){
+        $sqldrv = str_replace("'", '', $sqldrv);
         $extensions = get_loaded_extensions();
         $drvavl = array_keys($nameConvertions);
         $dbdrvpres = false;

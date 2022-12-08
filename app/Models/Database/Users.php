@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Api;
+namespace App\Models\Database;
 
 use CodeIgniter\Model;
 
@@ -25,6 +25,7 @@ class Users extends Model
 
     // Validation
     protected $validationRules = [
+        'username' => 'is_unique[users.username,id,{id}',
         'email' => 'required|valid_email|is_unique[users.email,id,{id}]',
     ];
     protected $validationMessages   = [];
