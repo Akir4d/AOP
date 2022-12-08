@@ -22,7 +22,7 @@ $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
 
 // AOP: This will send all undiscovered pages to Angular framework.
-$routes->set404Override('App\Controllers\Aop::index');
+$routes->set404Override('App\Controllers\Aop::getIndex');
 
 // The Auto Routing (Legacy) is very dangerous. It is easy to create vulnerable apps
 // where controller filters or CSRF protection are bypassed.
@@ -42,7 +42,7 @@ $routes->setAutoRoute(true);
 // route since we don't have to scan directories.
 
 // AOP: This will modify Angular's base url so that it may be redistributed everywhere.
-$routes->get('/', 'Aop::index');
+$routes->get('/', 'Aop::getIndex');
 
 /*
  * --------------------------------------------------------------------

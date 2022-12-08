@@ -28,7 +28,7 @@ export class LoginComponent implements OnInit {
             next: e=>{
                 this.messages = e
             }
-        })
+        });
     }
 
     // convenience getter for easy access to form fields

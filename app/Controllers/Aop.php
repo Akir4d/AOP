@@ -11,7 +11,7 @@ class Aop extends AopBaseController
             redirect()->to(base_url('/emergency/aop'));
     }
 
-    public function index()
+    public function getIndex()
     {
         return $this->aopRender("main", "/", ['api' => base_url("emergency/aop")]);
     }

@@ -1,43 +1,47 @@
 <div id="app-sidebar-1"
-class="surface-section h-screen hidden lg:block flex-shrink-0 fixed lg:sticky left-0 top-0 z-1 border-right-1 surface-border select-none w-15rem">
-<div class="flex flex-column h-full">
-  <div class="flex align-items-center h-5rem" pStyleClass="#app-sidebar-1" toggleClass="hidden">
-    <img src="assets/emergency/logo.png" alt="Image" width="100%">
+  class="surface-section h-screen hidden lg:block flex-shrink-0 fixed lg:sticky left-0 top-0 z-1 border-right-1 surface-border select-none w-15rem">
+  <div class="flex flex-column h-full">
+    <div class="flex align-items-center h-5rem">
+      <img class="hidden md:block w-full" src="assets/emergency/logo.png" alt="Image">
+      <a pRipple class="cursor-pointer lg:hidden text-700 ml-6"
+      pStyleClass="#app-sidebar-1" toggleClass="hidden">
+        <i class="pi pi-times text-4xl text-right"></i>
+      </a>
+    </div>
+    <div class="overflow-y-auto">
+      <ul class="list-none p-3 m-0">
+        <li>
+          <div pRipple class="p-3 flex align-items-center justify-content-between text-600 cursor-pointer"
+            pStyleClass="@next" enterClass="hidden" enterActiveClass="slidedown" leaveToClass="hidden"
+            leaveActiveClass="slideup">
+            <span class="font-medium">APPLICATION</span>
+            <i class="pi pi-chevron-down"></i>
+          </div>
+          <ul class="list-none p-0 m-0 overflow-hidden">
+            <li>
+              <a pRipple
+                class="flex align-items-center cursor-pointer p-3 border-round text-700 hover:surface-100 transition-duration-150 transition-colors">
+                <i class="pi pi-home mr-2"></i>
+                <span routerLink="/console" class="font-medium">Dashboard</span>
+              </a>
+            </li>
+            <li>
+              <a pRipple
+                class="flex align-items-center cursor-pointer p-3 border-round text-700 hover:surface-100 transition-duration-150 transition-colors">
+                <i class="pi pi-user mr-2"></i>
+                <span class="font-medium" routerLink="/console/admin">Emergency Access</span>
+              </a>
+            </li>
+            <li>
+              <a pRipple (click)="logout()"
+                class="flex align-items-center cursor-pointer p-3 border-round text-700 hover:surface-100 transition-duration-150 transition-colors">
+                <i class="pi pi-sign-out mr-2"></i>
+                <span class="font-medium">Logout</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
   </div>
-  <div class="overflow-y-auto">
-    <ul class="list-none p-3 m-0">
-      <li>
-        <div pRipple class="p-3 flex align-items-center justify-content-between text-600 cursor-pointer"
-          pStyleClass="@next" enterClass="hidden" enterActiveClass="slidedown" leaveToClass="hidden"
-          leaveActiveClass="slideup">
-          <span class="font-medium">APPLICATION</span>
-          <i class="pi pi-chevron-down"></i>
-        </div>
-        <ul class="list-none p-0 m-0 overflow-hidden">
-          <li>
-            <a pRipple
-            class="flex align-items-center cursor-pointer p-3 border-round text-700 hover:surface-100 transition-duration-150 transition-colors">
-            <i class="pi pi-home mr-2"></i>
-            <span routerLink="/console" class="font-medium">Dashboard</span>
-            </a>
-          </li>
-          <li>
-            <a pRipple
-              class="flex align-items-center cursor-pointer p-3 border-round text-700 hover:surface-100 transition-duration-150 transition-colors">
-              <i class="pi pi-user mr-2"></i>
-              <span class="font-medium" routerLink="/console/admin">Emergency Access</span>
-            </a>
-          </li>
-          <li>
-            <a pRipple (click)="logout()"
-              class="flex align-items-center cursor-pointer p-3 border-round text-700 hover:surface-100 transition-duration-150 transition-colors">
-              <i class="pi pi-sign-out mr-2"></i>
-              <span class="font-medium">Logout</span>
-            </a>
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </div>
-</div>
 </div>

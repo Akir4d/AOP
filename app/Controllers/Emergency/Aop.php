@@ -11,7 +11,7 @@ class Aop extends BaseController
         if ($test[0] !== "Bearer") redirect()->to(base_url('emergency/aop/login'));
     }
 
-    public function index()
+    public function getIndex()
     {
         return $this->aopRender("emergency", "emergency/aop", ['api' => base_url("emergency")]);
     }

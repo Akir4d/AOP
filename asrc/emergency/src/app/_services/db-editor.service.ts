@@ -21,7 +21,7 @@ export class DbEditorService {
   }
 
   dbinfo() {
-    return this.http.get<DbConfig>(`${document.getElementsByTagName("base")[0].dataset?.api}/checks/getdbconfig`, {});
+    return this.http.get<DbConfig>(`${document.getElementsByTagName("base")[0].dataset?.api}/checks/dbConfig`, {});
   }
 
 }
