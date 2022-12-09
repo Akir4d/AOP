@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const version = 0.35;
+const version = 0.36;
 const { exec, spawn, spawnSync, execSync } = require("child_process");
 const console = require("console");
 const fs = require('fs');
@@ -428,9 +428,9 @@ const copyBuildReal = u => {
         delete SPAWNARG.cwd;
         spawnSync(PHP, [path.join(update, 'aopm', 'update.php')], SPAWNARG);
         fs.unlinkSync(path.join(update, 'writable', 'firstup.info.txt'));
-        fs.rmdirSync(path.join(update, 'cache'), { recursive: true, force: true });
+        fs.rmSync(path.join(update, 'cache'), { recursive: true, force: true });
         fs.writeFileSync(path.join(update, 'writable', 'nocomposer.txt'), 'remove to reenable composer autoupdate');
-
+        
     }
     if (params.hasOwnProperty('copy')) {
         for (let rem of['public', 'index.php', 'main.html', '.env', '.htaccess'])
@@ -447,13 +447,14 @@ const copyBuildReal = u => {
                 break;
             default:
                 copyInsideSourceRecursiveSync('build', params.copy, true);
-                let fistup = ['aopm', 'versions', 'firstup.info.txt'];
-                if (fs.existsSync(path.join(params.copy, 'backend', ...fistup))) {
-                    fs.rmSync(path.join(params.copy, 'backend', ...fistup));
+                let firstup = ['aopm', 'versions', 'firstup.info.txt'];
+                if (fs.existsSync(path.join(params.copy, 'backend', ...firstup))) {
+                    fs.rmSync(path.join(params.copy, 'backend', ...firstup));
                 }
-                if (fs.existsSync(path.join(params.copy, ...fistup))) {
-                    fs.rmSync(path.join(params.copy, ...fistup));
+                if (fs.existsSync(path.join(params.copy, ...firstup))) {
+                    fs.rmSync(path.join(params.copy, ...firstup));
                 }
+                process.exit(0);
         }
     } else {
         process.exit(0);
